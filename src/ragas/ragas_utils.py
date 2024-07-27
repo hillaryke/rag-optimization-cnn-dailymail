@@ -1,13 +1,4 @@
-import os
-import sys
-from dotenv import load_dotenv
-
-load_dotenv()
-PROJECT_PATH = os.environ.get('PROJECT_PATH')
-
-# Add the project root path to sys.path
-if PROJECT_PATH not in sys.path:
-    sys.path.insert(0, PROJECT_PATH)
+import pandas as pd
 
 def load_evaluation_data(csv_file_path: str = "data/evaluation_set.csv") -> dict:
     """Loads evaluation data from a CSV file and returns questions and ground truths.
@@ -20,10 +11,23 @@ def load_evaluation_data(csv_file_path: str = "data/evaluation_set.csv") -> dict
         dict: A dictionary containing:
             - "questions": A list of questions.
             - "ground_truths": A list of corresponding ground truth answers.
+
+    Raises:
+        FileNotFoundError: If the CSV file does not exist.
+        ValueError: If the CSV file does not contain the required columns.
+        pd.errors.EmptyDataError: If the CSV file is empty.
+        pd.errors.ParserError: If the CSV file is malformed.
     """
 
-    df = pd.read_csv(csv_file_path)  # Read the CSV file
-    
+    try:
+        df = pd.read_csv(csv_file_path)  # Read the CSV file
+    except FileNotFoundError:
+        raise FileNotFoundError(f"The file at path '{csv_file_path}' was not found.")
+    except pd.errors.EmptyDataError:
+        raise pd.errors.EmptyDataError(f"The file at path '{csv_file_path}' is empty.")
+    except pd.errors.ParserError:
+        raise pd.errors.ParserError(f"The file at path '{csv_file_path}' is malformed and cannot be parsed.")
+
     # Check if required columns are present
     if "question" not in df.columns or "ground_truth" not in df.columns:
         raise ValueError("The CSV file must contain 'question' and 'ground_truth' columns.")
