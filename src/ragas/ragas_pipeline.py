@@ -1,5 +1,4 @@
 import os
-os.chdir("../../")
 
 from ragas import evaluate
 from datasets import Dataset
@@ -68,8 +67,6 @@ def get_context_and_answer(
             "ground_truth": ground_truth,
         }
 
-        results.append(
-            
-        )
+        results.append(test_data)
 
     return results
