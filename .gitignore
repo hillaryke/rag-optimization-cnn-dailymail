@@ -2,6 +2,7 @@ data
 
 tmp
 chroma
+chromadb
 
 # IDE
 .idea
