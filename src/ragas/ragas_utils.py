@@ -1,4 +1,6 @@
 import pandas as pd
+from datasets import Dataset
+from ragas.integrations.langsmith import upload_dataset
 
 def load_evaluation_data(csv_file_path: str = "data/evaluation_set.csv") -> dict:
     """Loads evaluation data from a CSV file and returns questions and ground truths.
@@ -36,3 +38,21 @@ def load_evaluation_data(csv_file_path: str = "data/evaluation_set.csv") -> dict
     ground_truths = df["ground_truth"].tolist()
 
     return {"questions": questions, "ground_truths": ground_truths}
+
+def upload_csv_dataset_to_langsmith(csv_file_path: str, dataset_name: str, dataset_desc: str) -> Dataset:
+    """Uploads an evaluation dataset from a CSV file to LangSmith.
+
+    Args:
+        csv_file_path (str): The path to the CSV file containing the evaluation data.
+        dataset_name (str): The name to give the dataset on LangSmith.
+        dataset_desc (str): A description of the dataset for LangSmith.
+
+    Returns:
+        Dataset: The uploaded dataset object.
+    """
+    
+    df = pd.read_csv(csv_file_path)
+    eval_set = Dataset.from_pandas(df)
+
+    dataset = upload_dataset(eval_set, dataset_name, dataset_desc)
+    return dataset
