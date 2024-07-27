@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 
 from ragas import evaluate
 from datasets import Dataset
@@ -10,26 +11,36 @@ from ragas.metrics import (
 )
 
 from src.ragas.ragas_utils import load_evaluation_data
-from src import pretty_print_docs
-from typing import List, Dict
-from langchain.docstore.document import Document
-
-def evaluate_metrics(dataset):
-  # evaluating dataest on listed metrics
-  result = evaluate(
-      dataset=dataset,
-      metrics=[
-          answer_correctness,
-          faithfulness,
-          answer_relevancy,
-          context_precision
-      ]
-  )
+from typing import List, Dict, Any
 
 
-  df_results = result.to_pandas()
+def run_evaluation(rag_chain: Any) -> pd.DataFrame:
+    """
+    Runs the evaluation of the RAG chain on the evaluation dataset.
 
-  return df_results
+    Args:
+        rag_chain (Any): The RAG chain model to be evaluated.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the evaluation results.
+    """
+    eval_data = load_evaluation_data()
+    testset = get_context_and_answer(eval_data, rag_chain)
+
+    # Evaluating test set on listed metrics
+    result = evaluate(
+        dataset=testset,
+        metrics=[
+            answer_correctness,
+            faithfulness,
+            answer_relevancy,
+            context_precision
+        ]
+    )
+
+    df_results = result.to_pandas()
+
+    return df_results
 
 
 def get_context_and_answer(
@@ -52,7 +63,12 @@ def get_context_and_answer(
             - "ground_truth": The ground truth answer (from the evaluation data).
     """
 
-    results = []
+    results = {
+        "question": [],
+        "contexts": [],
+        "answer": [],
+        "ground_truth": [],
+    }
 
     for question, ground_truth in zip(
         evaluation_data["questions"], evaluation_data["ground_truths"]
@@ -60,13 +76,10 @@ def get_context_and_answer(
         response = rag_chain.invoke(question)
         contexts_list = [doc.page_content for doc in response["source_documents"]]
                 
-        test_data = {
-            "question": question,
-            "context": contexts_list,
-            "answer": response["result"],
-            "ground_truth": ground_truth,
-        }
-
-        results.append(test_data)
-
-    return results
+        results["question"].append(question)
+        results["contexts"].append(contexts_list)
+        results["answer"].append(response["result"])
+        results["ground_truth"].append(ground_truth)
+        
+    dataset = Dataset.from_dict(results)
+    return dataset
