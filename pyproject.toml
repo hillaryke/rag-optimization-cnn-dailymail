@@ -1,19 +1,17 @@
 [tool.poetry]
 name = "rag-optimization-cnn-dailymail"
 version = "0.1.0"
-description = ""
+description = "Optimizing a Retrieval-Augmented Generation (RAG) system on the CNN/Daily Mail dataset using LangChain, with performance benchmarking and analysis via RAGAS."
 authors = ["Hillary Kipkemoi <tenskap@gmail.com>"]
+license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
 langchain = "^0.2.11"
-openai = "^1.37.1"
-chromadb = "^0.5.5"
-ragas = "^0.1.11"
-langchain-openai = "^0.1.19"
-langchain-community = "^0.2.10"
 
+[tool.poetry.group.dev.dependencies]
+transformers = "^4.43.3"
 
 [build-system]
 requires = ["poetry-core"]
