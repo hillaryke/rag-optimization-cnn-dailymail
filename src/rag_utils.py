@@ -3,7 +3,7 @@ from typing import Dict, List
 from langchain.prompts import PromptTemplate
 from langchain.schema import StrOutputParser
 from langchain.docstore.document import Document
-from langchain.schema.runnable import RunnablePassthrough, RunnableParallel
+from langchain.schema.runnable import RunnablePassthrough, RunnableParallel, RunnableLambda
 
 GENERATOR_TEMPLATE = """Use the following pieces of context to answer the question at the end.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
@@ -47,11 +47,10 @@ def rag_chain_setup(retriever, llm) -> RunnableParallel:
         }
     )
 
-    # Input validation and filtering
-    def filter_langsmith_dataset(data: Dict) -> str:
-        """Filters out the question from LangSmith dataset format."""
-        return data.get("question", "")  # Handle missing keys gracefully
-
+    filter_langsmith_dataset = RunnableLambda(
+        lambda x: x["question"] if isinstance(x, dict) else x
+    )
+    
     rag_chain = RunnableParallel(
         {
             "question": filter_langsmith_dataset,
