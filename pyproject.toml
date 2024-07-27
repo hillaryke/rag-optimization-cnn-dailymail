@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "rag-optimization-cnn-dailymail"
+version = "0.1.0"
+description = ""
+authors = ["Hillary Kipkemoi <tenskap@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+langchain = "^0.2.11"
+openai = "^1.37.1"
+chromadb = "^0.5.5"
+ragas = "^0.1.11"
+langchain-openai = "^0.1.19"
+langchain-community = "^0.2.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
