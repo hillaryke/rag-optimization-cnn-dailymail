@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-def load_api_key(key_name: str = None) -> str:
+def load_api_keys(key_name: str = None) -> str:
     """
     Load an API key from environment variables.
 
