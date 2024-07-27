@@ -11,6 +11,8 @@ python = "^3.10"
 langchain = "^0.2.11"
 datasets = "^2.20.0"
 python-dotenv = "^1.0.1"
+langchain-community = "^0.2.10"
+langchain-openai = "^0.1.19"
 
 [tool.poetry.group.dev.dependencies]
 transformers = "^4.43.3"
