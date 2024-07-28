@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-from typing import List, Dict
+from typing import List, Dict, Any
 from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_chroma import Chroma
@@ -21,7 +21,8 @@ CHROMA_PATH = "chromadb"
 
 class RAGSystem:
     def __init__(self, 
-                model_name: str, 
+                model_name: str,
+                embeddings: Any = None,
                 source_file_path: 
                 str = "data/cnn_dailymail_validation_subset.csv",
                 existing_chroma: str = False,
@@ -63,7 +64,7 @@ class RAGSystem:
 
     def setup_bm25_retriever(self, split_docs: List[str]):
         self.bm25_retriever = BM25Retriever.from_documents(split_docs)
-        self.bm25_retriever.k = 3
+        self.bm25_retriever.k = self.k_documents
         
     def setup_basic_retriever(self):
         self.vectorstore_retriever = self.vectorstore.as_retriever(search_kwargs={"k": self.k_documents})
