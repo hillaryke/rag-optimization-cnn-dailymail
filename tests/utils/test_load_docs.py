@@ -4,7 +4,9 @@ from langchain.docstore.document import Document
 
 import os
 os.chdir("../../")
-from src.rag_pipeline.load_docs import load_docs_from_csv  # Import your function
+from src.rag_pipeline.load_docs import load_docs_from_csv
+
+from unittest.mock import patch  # patch for mocking
 
 class TestLoadDocsFromCSV(unittest.TestCase):
     def setUp(self):
@@ -22,11 +24,14 @@ class TestLoadDocsFromCSV(unittest.TestCase):
 
     def test_load_as_documents(self):
         """Test loading documents as Document objects with metadata."""
-        result = load_docs_from_csv(
-            file_path=None,  # Here we use the DataFrame directly for this test
-            page_content_column="article",
-            as_document=True,
-        )
+        # Mock the pd.read_csv to return your test data directly
+        with patch("pandas.read_csv") as mock_read_csv:
+            mock_read_csv.return_value = self.test_data
+            result = load_docs_from_csv(
+                file_path="test_data/test_file.csv",  # Provide a valid path for mocking
+                page_content_column="article",
+                as_document=True,
+            )
 
 if __name__ == "__main__":
     unittest.main()
