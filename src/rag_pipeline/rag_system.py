@@ -7,6 +7,13 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_chroma import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQA
+from langchain.retrievers import EnsembleRetriever
+from langchain_community.retrievers import BM25Retriever
+
+from dotenv import load_dotenv
+load_dotenv()
+
+from src.rag_utils import rag_chain_setup
 
 def load_documents_from_csv(
   file_path: str = "data/cnn_dailymail_validation_subset.csv", 
@@ -32,6 +39,8 @@ class RAGSystem:
         self.vectorstore = None
         self.rag_chain = None
         self.existing_chroma = existing_chroma
+        self.bm25_retriever = None
+        self.ensemble_retriever = None
 
     def load_documents(self, file_path: str = None):
         documents = load_documents_from_csv(self.source_file_path)
@@ -45,10 +54,20 @@ class RAGSystem:
         if split_docs is None:
             # Load an existing Chroma instance
             self.vectorstore = Chroma(persist_directory=CHROMA_PATH, embedding_function=self.embeddings)
-            
         else:
-          # Create a new Chroma instance
-          self.vectorstore = Chroma.from_documents(split_docs, embedding=self.embeddings, persist_directory=CHROMA_PATH)
+            # Create a new Chroma instance
+            self.vectorstore = Chroma.from_documents(split_docs, embedding=self.embeddings, persist_directory=CHROMA_PATH)
+
+    def setup_bm25_retriever(self, split_docs: List[str]):
+        self.bm25_retriever = BM25Retriever.from_documents(split_docs)
+        self.bm25_retriever.k = 3
+
+    def setup_ensemble_retriever(self):
+        chroma_retriever = self.vectorstore.as_retriever(search_kwargs={"k": 3})
+        self.ensemble_retriever = EnsembleRetriever(
+            retrievers=[self.bm25_retriever, chroma_retriever],
+            weights=[0.5, 0.5]
+        )
 
     def setup_llm(self):
         llm = ChatOpenAI(model_name=self.model_name, temperature=0)
@@ -56,24 +75,23 @@ class RAGSystem:
         return llm
 
     def setup_rag_chain(self):
-        retriever = self.vectorstore.as_retriever(search_kwargs={"k": 3})
         llm = self.setup_llm()
-        self.rag_chain = RetrievalQA.from_chain_type(
-            llm=llm,
-            chain_type="stuff",
-            retriever=retriever,
-            return_source_documents=True
-        )
+        self.rag_chain = rag_chain_setup(self.ensemble_retriever, llm)
 
     def query(self, question: str) -> str:
         result = self.rag_chain.invoke(question)
-        return result["result"]
+        return result["answer"]
 
     def initialize(self):
         self.load_documents()
+        split_docs = self.prepare_documents()
+        
         if not self.existing_chroma:
-            split_docs = self.prepare_documents()
             self.setup_vectorstore(split_docs)
         else:
             self.setup_vectorstore()
+        
+        self.setup_bm25_retriever(split_docs)
+        self.setup_ensemble_retriever()
         self.setup_rag_chain()
+
