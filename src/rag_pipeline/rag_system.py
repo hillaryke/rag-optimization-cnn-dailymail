@@ -71,8 +71,6 @@ class RAGSystem:
         return self.vectorstore
 
     def setup_vectorstore(self, split_docs: List[str] = None):
-        # For testing
-        split_docs = split_docs[:3]
         # Initialize the vectorstore - this could be an existing collection
         self.initialize_vectorstore()
         
