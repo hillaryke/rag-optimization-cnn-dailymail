@@ -28,10 +28,19 @@ class TestLoadDocsFromCSV(unittest.TestCase):
         with patch("pandas.read_csv") as mock_read_csv:
             mock_read_csv.return_value = self.test_data
             result = load_docs_from_csv(
-                file_path="test_data/test_file.csv",  # Provide a valid path for mocking
+                file_path="test_data/test_file.csv",  # Here I Provide a valid path for mocking
                 page_content_column="article",
                 as_document=True,
             )
+
+        # Check if the result is a list of Document objects
+        self.assertIsInstance(result, list)
+        for doc in result:
+            self.assertIsInstance(doc, Document)
+            # Check if the metadata is correct
+            self.assertEqual(doc.metadata["source"], "cnn_dailymail")
+            self.assertIn(doc.metadata["id"], self.test_data["id"].tolist())
+
 
 if __name__ == "__main__":
     unittest.main()
