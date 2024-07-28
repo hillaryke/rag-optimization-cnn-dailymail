@@ -14,13 +14,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from src.rag_pipeline.rag_utils import rag_chain_setup
-
-def load_documents_from_csv(
-  file_path: str = "data/cnn_dailymail_validation_subset.csv", 
-  page_content_column: str = "article"
-) -> List[str]:
-    df = pd.read_csv(file_path)
-    return df[page_content_column].tolist()
+from src.rag_pipeline.chunking_strategies import chunk_by_recursive_split
+from src.rag_pipeline.load_docs import load_docs_from_csv
 
 CHROMA_PATH = "chromadb"
 
@@ -51,7 +46,7 @@ class RAGSystem:
         self.k_documents = 5
 
     def load_documents(self, file_path: str = None):
-        documents = load_documents_from_csv(self.source_file_path)
+        documents = load_docs_from_csv(as_document=True)
         self.documents = documents
         
     def prepare_documents(self, chunk_size: int = 1000, chunk_overlap: int = 200):
@@ -106,7 +101,7 @@ class RAGSystem:
             split_docs = self.prepare_documents()
             self.setup_vectorstore(split_docs)
 
-            if use_ensemble_retriever:
+            if self.use_ensemble_retriever:
                 self.setup_bm25_retriever(split_docs)
                 self.setup_ensemble_retriever()
             else:
