@@ -46,6 +46,10 @@ def load_docs_from_csv(
     """
     df = pd.read_csv(file_path)
     if as_document:
-        return [Document(page_content=row[page_content_column], metadata={"source": "cnn_dailymail"}) for _, row in df.iterrows()]
+        return [
+            Document(
+                page_content=row[page_content_column], 
+                metadata={"source": "cnn_dailymail", "id": row["id"]}
+            ) for _, row in df.iterrows()]
     else:
         return df[page_content_column].tolist()
