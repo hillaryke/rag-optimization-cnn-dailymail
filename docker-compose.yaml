@@ -1,0 +1,12 @@
+services:
+  pgvector:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "5432:5432"
+    restart: always
+    environment:
+      POSTGRES_DB: pgvector
+      POSTGRES_USER: pgvector
+      POSTGRES_PASSWORD: pgvector
+    volumes:
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
