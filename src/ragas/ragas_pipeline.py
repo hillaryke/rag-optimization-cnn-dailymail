@@ -11,7 +11,7 @@ from ragas.metrics import (
 )
 
 from src.ragas.ragas_utils import load_evaluation_data
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 
 def run_ragas_evaluation(
@@ -44,11 +44,14 @@ def run_ragas_evaluation(
         raise ValueError("dataset_name and experiment_name must be provided when using LangSmith.")
 
     # Get the test set
+    print("--LOADING EVALUATION DATA--")
     eval_data = load_evaluation_data()  # Load your evaluation data
+    print("--GETTING CONTEXT AND ANSWERS--")
     testset = get_context_and_answer(eval_data, rag_chain)
 
     # Evaluating test set on listed metrics
     if use_langsmith:  
+        print("--USING LANGSMITH FOR EVALUATION--")
         try:
             upload_dataset(testset, dataset_name, "Generated testset for RAG evaluation")
         except Exception as e:
@@ -61,8 +64,10 @@ def run_ragas_evaluation(
             verbose=True,
         )
     else:
+        print("--EVALUATING LOCALLY--")
         result = evaluate(dataset=testset, metrics=metrics)
 
+    print("--EVALUATION COMPLETE--")
     df_results = result.to_pandas()
     return df_results
 
@@ -98,11 +103,11 @@ def get_context_and_answer(
         evaluation_data["questions"], evaluation_data["ground_truths"]
     ):
         response = rag_chain.invoke(question)
-        contexts_list = [doc.page_content for doc in response["source_documents"]]
+        contexts_list = response["contexts"]
                 
         results["question"].append(question)
         results["contexts"].append(contexts_list)
-        results["answer"].append(response["result"])
+        results["answer"].append(response["answer"])
         results["ground_truth"].append(ground_truth)
         
     dataset = Dataset.from_dict(results)
