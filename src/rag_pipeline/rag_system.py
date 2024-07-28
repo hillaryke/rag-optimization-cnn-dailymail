@@ -13,7 +13,7 @@ from langchain_community.retrievers import BM25Retriever
 from dotenv import load_dotenv
 load_dotenv()
 
-from src.rag_utils import rag_chain_setup
+from src.rag_pipeline.rag_utils import rag_chain_setup
 
 def load_documents_from_csv(
   file_path: str = "data/cnn_dailymail_validation_subset.csv", 
@@ -26,10 +26,13 @@ CHROMA_PATH = "chromadb"
 
 class RAGSystem:
     def __init__(self, 
-                 model_name: str, 
-                 source_file_path: 
-                  str = "data/cnn_dailymail_validation_subset.csv",
-                  existing_chroma: str = False
+                model_name: str, 
+                source_file_path: 
+                str = "data/cnn_dailymail_validation_subset.csv",
+                existing_chroma: str = False,
+                use_ensemble_retriever: bool = False,
+                chunk_size: int = 1000,
+                chunk_overlap: int = 200
     ):
         self.model_name = model_name
         self.llm = None
@@ -39,16 +42,21 @@ class RAGSystem:
         self.vectorstore = None
         self.rag_chain = None
         self.existing_chroma = existing_chroma
+        self.vectorstore_retriever = None
         self.bm25_retriever = None
         self.ensemble_retriever = None
+        self.use_ensemble_retriever = use_ensemble_retriever
+        self.chunk_size = 1000
+        self.chunk_overlap = 200
+        self.k_documents = 5
 
     def load_documents(self, file_path: str = None):
         documents = load_documents_from_csv(self.source_file_path)
         self.documents = documents
         
     def prepare_documents(self, chunk_size: int = 1000, chunk_overlap: int = 200):
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-        return text_splitter.create_documents(self.documents)
+        split_docs = chunk_by_recursive_split(self.documents, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+        return split_docs
 
     def setup_vectorstore(self, split_docs: List[str] = None):
         if split_docs is None:
@@ -61,9 +69,12 @@ class RAGSystem:
     def setup_bm25_retriever(self, split_docs: List[str]):
         self.bm25_retriever = BM25Retriever.from_documents(split_docs)
         self.bm25_retriever.k = 3
+        
+    def setup_basic_retriever(self):
+        self.vectorstore_retriever = self.vectorstore.as_retriever(search_kwargs={"k": self.k_documents})
 
     def setup_ensemble_retriever(self):
-        chroma_retriever = self.vectorstore.as_retriever(search_kwargs={"k": 3})
+        chroma_retriever = self.vectorstore.as_retriever(search_kwargs={"k": self.k_documents})
         self.ensemble_retriever = EnsembleRetriever(
             retrievers=[self.bm25_retriever, chroma_retriever],
             weights=[0.5, 0.5]
@@ -76,7 +87,10 @@ class RAGSystem:
 
     def setup_rag_chain(self):
         llm = self.setup_llm()
-        self.rag_chain = rag_chain_setup(self.ensemble_retriever, llm)
+        if self.use_ensemble_retriever:
+            self.rag_chain = rag_chain_setup(self.ensemble_retriever, llm)
+        else:
+            self.rag_chain = rag_chain_setup(self.vectorstore_retriever, llm)
 
     def query(self, question: str) -> str:
         result = self.rag_chain.invoke(question)
@@ -84,14 +98,19 @@ class RAGSystem:
 
     def initialize(self):
         self.load_documents()
-        split_docs = self.prepare_documents()
         
-        if not self.existing_chroma:
-            self.setup_vectorstore(split_docs)
-        else:
+        if self.existing_chroma:
             self.setup_vectorstore()
-        
-        self.setup_bm25_retriever(split_docs)
-        self.setup_ensemble_retriever()
+            self.setup_basic_retriever()
+        else:
+            split_docs = self.prepare_documents()
+            self.setup_vectorstore(split_docs)
+
+            if use_ensemble_retriever:
+                self.setup_bm25_retriever(split_docs)
+                self.setup_ensemble_retriever()
+            else:
+                self.setup_basic_retriever()
+            
         self.setup_rag_chain()
 
