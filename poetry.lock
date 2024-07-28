@@ -1733,6 +1733,25 @@ openai = ">=1.32.0,<2.0.0"
 tiktoken = ">=0.7,<1"
 
 [[package]]
+name = "langchain-postgres"
+version = "0.0.9"
+description = "An integration package connecting Postgres and LangChain"
+optional = false
+python-versions = "<4.0.0,>=3.8.1"
+files = [
+    {file = "langchain_postgres-0.0.9-py3-none-any.whl", hash = "sha256:efbd8afbb7cc810fa6dfa87dd269e466c70d9af9f74aececcf47893e4b51535e"},
+    {file = "langchain_postgres-0.0.9.tar.gz", hash = "sha256:f68e1981e79f2130ae34053683b90eea63335d7ef451db3f870a36b48d5675ab"},
+]
+
+[package.dependencies]
+langchain-core = ">=0.1.50,<0.3"
+numpy = ">=1,<2"
+pgvector = ">=0.2.5,<0.3.0"
+psycopg = ">=3,<4"
+psycopg-pool = ">=3.2.1,<4.0.0"
+sqlalchemy = ">=2,<3"
+
+[[package]]
 name = "langchain-text-splitters"
 version = "0.2.2"
 description = "LangChain text splitting utilities"
@@ -2642,12 +2661,12 @@ ptyprocess = ">=0.5"
 
 [[package]]
 name = "pgvector"
-version = "0.3.2"
+version = "0.2.5"
 description = "pgvector support for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pgvector-0.3.2-py2.py3-none-any.whl", hash = "sha256:a44541c75a7340993b2840015820a910e5d7625d2ddd1235c1ee659732531bf6"},
+    {file = "pgvector-0.2.5-py2.py3-none-any.whl", hash = "sha256:5e5e93ec4d3c45ab1fa388729d56c602f6966296e19deee8878928c6d567e41b"},
 ]
 
 [package.dependencies]
@@ -2754,6 +2773,43 @@ files = [
 
 [package.extras]
 test = ["enum34", "ipaddress", "mock", "pywin32", "wmi"]
+
+[[package]]
+name = "psycopg"
+version = "3.2.1"
+description = "PostgreSQL database adapter for Python"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "psycopg-3.2.1-py3-none-any.whl", hash = "sha256:ece385fb413a37db332f97c49208b36cf030ff02b199d7635ed2fbd378724175"},
+    {file = "psycopg-3.2.1.tar.gz", hash = "sha256:dc8da6dc8729dacacda3cc2f17d2c9397a70a66cf0d2b69c91065d60d5f00cb7"},
+]
+
+[package.dependencies]
+typing-extensions = ">=4.4"
+tzdata = {version = "*", markers = "sys_platform == \"win32\""}
+
+[package.extras]
+binary = ["psycopg-binary (==3.2.1)"]
+c = ["psycopg-c (==3.2.1)"]
+dev = ["ast-comments (>=1.1.2)", "black (>=24.1.0)", "codespell (>=2.2)", "dnspython (>=2.1)", "flake8 (>=4.0)", "mypy (>=1.6)", "types-setuptools (>=57.4)", "wheel (>=0.37)"]
+docs = ["Sphinx (>=5.0)", "furo (==2022.6.21)", "sphinx-autobuild (>=2021.3.14)", "sphinx-autodoc-typehints (>=1.12)"]
+pool = ["psycopg-pool"]
+test = ["anyio (>=4.0)", "mypy (>=1.6)", "pproxy (>=2.7)", "pytest (>=6.2.5)", "pytest-cov (>=3.0)", "pytest-randomly (>=3.5)"]
+
+[[package]]
+name = "psycopg-pool"
+version = "3.2.2"
+description = "Connection Pool for Psycopg"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "psycopg_pool-3.2.2-py3-none-any.whl", hash = "sha256:273081d0fbfaced4f35e69200c89cb8fbddfe277c38cc86c235b90a2ec2c8153"},
+    {file = "psycopg_pool-3.2.2.tar.gz", hash = "sha256:9e22c370045f6d7f2666a5ad1b0caf345f9f1912195b0b25d0d3bcc4f3a7389c"},
+]
+
+[package.dependencies]
+typing-extensions = ">=4.4"
 
 [[package]]
 name = "psycopg2"
@@ -4788,4 +4844,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "c05597b90fc1cd0ee1a7c75f7ee9ab70b4a3959734ce1d9ed0665dbd595a2b42"
+content-hash = "18893be9c3e04090a5e4498069c0396f6361e5c30025e7568b42d0adc11a289e"
