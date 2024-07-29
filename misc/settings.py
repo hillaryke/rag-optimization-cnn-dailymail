@@ -1,3 +1,4 @@
+import os
 from typing import Final
 
 class Settings:
@@ -9,15 +10,25 @@ class Settings:
     PAGE_CONTENT_COLUMN: Final = "article"
     
     GENERATOR_TEMPLATE: Final = """
-      Use the following pieces of context to answer the question at the end.
-      If you don't know the answer, just say that you don't know, don't try to make up an answer.
-      Use three sentences maximum and keep the answer as concise as possible.
+        Use the following pieces of context to answer the question at the end. 
+        These are the instruction to consider:
+        - Prioritize accuracy and conciseness in your response.
+        - Answer directly and avoid repeating information from the question.
+        - If the context doesn't contain the answer, just say that "I don't know".
+        - Don't try to make up an answer.
+        - Limit your answer to three sentences maximum, but aim for two if possible.
 
-      Context: {context}
+        Example:
+          Context: The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, France. It is named after the engineer Gustave Eiffel, whose company designed and built the tower.
 
-      Question: {question}
-
-      Helpful Answer:
+          Question: Where is the Eiffel Tower located?
+          Answer: Paris, France
+        
+        REMEMBER TO FOLLOW THE INSTRUCTIONS ABOVE.
+        
+        Context: {context}
+        Question: {question}
+        Answer:
     """
 
     EVALUATION_FILE_PATH = "data/evaluation_sets/evaluation_set_20d20.csv"
