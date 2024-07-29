@@ -17,12 +17,14 @@ from src.rag_pipeline.rag_utils import rag_chain_setup
 from src.rag_pipeline.chunking_strategies import chunk_by_recursive_split
 from src.rag_pipeline.load_docs import load_docs_from_csv
 
+from misc import Settings
+
 # constants - can be easily moved to a config file
-PG_CONNECTION_STRING = os.getenv("PG_CONNECTION_STRING")
-COLLECTION_NAME = "cnn_dailymail_validation_subset"
-SOURCE_FILE_PATH = "data/cnn_dailymail_validation_subset.csv"
-CHUNK_SIZE = 1000
-CHUNK_OVERLAP = 200
+PG_CONNECTION_STRING = Settings.PG_CONNECTION_STRING
+COLLECTION_NAME = Settings.COLLECTION_NAME
+SOURCE_FILE_PATH = Settings.SOURCE_FILE_PATH
+CHUNK_SIZE = Settings.CHUNK_SIZE
+CHUNK_OVERLAP = Settings.CHUNK_OVERLAP
 
 class RAGSystem:
     def __init__(self, 

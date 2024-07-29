@@ -1,10 +1,10 @@
 import os
 import pandas as pd
 
+from typing import List, Dict, Any, Optional
 from ragas import evaluate as ragas_evaluate
 from ragas.integrations.langsmith import evaluate as langsmith_evaluate
 from ragas.integrations.langsmith import upload_dataset
-
 from datasets import Dataset
 from ragas.metrics import (
     answer_correctness,
@@ -14,9 +14,9 @@ from ragas.metrics import (
 )
 
 from src.ragas.ragas_utils import load_evaluation_data
-from typing import List, Dict, Any, Optional
+from misc import Settings
 
-DATASET_DESCRIPTION = "Evaluation dataset for RAGAS pipeline on cnn_dailymail dataset."
+EVALUATION_DATASET_DESCRIPTION = Settings.EVALUATION_DATASET_DESCRIPTION
 
 def run_ragas_evaluation(
     rag_chain: Any,
@@ -25,7 +25,7 @@ def run_ragas_evaluation(
     dataset_name: Optional[str] = None,
     experiment_name: Optional[str] = None,
     save_results: bool = False,
-    dataset_description: Optional[str] = DATASET_DESCRIPTION,
+    dataset_description: Optional[str] = EVALUATION_DATASET_DESCRIPTION,
 ) -> pd.DataFrame:
     """
     Runs the evaluation of the RAG chain on the evaluation dataset.
@@ -36,7 +36,7 @@ def run_ragas_evaluation(
         dataset_name (str, optional): Required if use_langsmith is True. The name of the dataset in LangSmith.
         experiment_name (str, optional): Required if use_langsmith is True. The name of the experiment in LangSmith.
         save_results (bool, optional): If True, saves the evaluation results to a CSV file. Defaults to False.
-        dataset_description (str, optional): The description of the dataset to upload to LangSmith. Defaults to DATASET_DESCRIPTION.
+        dataset_description (str, optional): The description of the dataset to upload to LangSmith. Defaults to EVALUATION_DATASET_DESCRIPTION.
         upload_dataset_to_langsmith (bool, optional): If True, uploads the dataset to LangSmith. Defaults to False.
         
 
