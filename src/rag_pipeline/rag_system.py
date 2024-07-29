@@ -51,16 +51,16 @@ class RAGSystem:
         self.existing_vectorstore = existing_vectorstore
         self.ensemble_retriever = None
         self.use_ensemble_retriever = use_ensemble_retriever
-        self.chunk_size = 1000
-        self.chunk_overlap = 200
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
         self.k_documents = 5
 
     def load_documents(self, file_path: str = None):
         documents = load_docs_from_csv(as_document=True)
         self.documents = documents
         
-    def prepare_documents(self, chunk_size: int = 1000, chunk_overlap: int = 200):
-        split_docs = chunk_by_recursive_split(self.documents, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    def prepare_documents(self):
+        split_docs = chunk_by_recursive_split(self.documents, chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap)
         return split_docs
     
     def initialize_vectorstore(self):
