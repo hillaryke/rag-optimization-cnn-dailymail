@@ -17,6 +17,7 @@ from typing import List, Dict, Any, Optional
 def run_ragas_evaluation(
     rag_chain: Any,
     use_langsmith: bool = False,
+    upload_dataset: bool = False,
     dataset_name: Optional[str] = None,
     experiment_name: Optional[str] = None,
 ) -> pd.DataFrame:
@@ -39,23 +40,27 @@ def run_ragas_evaluation(
         context_precision,
     ]
     
-    # Input validation for LangSmith usage
-    if use_langsmith and (dataset_name is None or experiment_name is None):
-        raise ValueError("dataset_name and experiment_name must be provided when using LangSmith.")
-
-    # Get the test set
     print("--LOADING EVALUATION DATA--")
+    # Get the test set
     eval_data = load_evaluation_data()  # Load your evaluation data
     print("--GETTING CONTEXT AND ANSWERS--")
     testset = get_context_and_answer(eval_data, rag_chain)
 
     # Evaluating test set on listed metrics
-    if use_langsmith:  
+    if use_langsmith:
         print("--USING LANGSMITH FOR EVALUATION--")
-        try:
-            upload_dataset(testset, dataset_name, "Generated testset for RAG evaluation")
-        except Exception as e:
-            print(f"Error uploading dataset: {e}")
+        # Input validation for LangSmith usage
+        if dataset_name is None:
+            raise ValueError("dataset_name is required when using Langsmith.") 
+        
+        if upload_dataset:
+            if experiment_name is None:
+                raise ValueError("experiment_name is required when uploading dataset to Langsmith.")
+            try:
+                upload_dataset(testset, dataset_name, "Generated testset for RAG evaluation")
+            except Exception as e:
+                print(f"Error uploading dataset: {e}")
+        
         result = evaluate(
             dataset_name=dataset_name,
             llm_or_chain_factory=rag_chain,
@@ -69,6 +74,7 @@ def run_ragas_evaluation(
 
     print("--EVALUATION COMPLETE--")
     df_results = result.to_pandas()
+    
     return df_results
 
 
