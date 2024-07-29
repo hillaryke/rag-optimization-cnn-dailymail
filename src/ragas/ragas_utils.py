@@ -2,11 +2,11 @@ import pandas as pd
 from datasets import Dataset
 from ragas.integrations.langsmith import upload_dataset
 
-EVALUATION_FILE_PATH = "data/evaluation_set.csv"
+EVALUATION_FILE_PATH = "data/evaluation_sets/evaluation_set_20d20.csv"
 DATASET_NAME = "CNN DailyMail Evaluation Dataset"
 DATASET_DESC = "A dataset of questions and ground truth answers from the CNN DailyMail dataset for evaluation purposes."
 
-def load_evaluation_data(csv_file_path: str = "data/evaluation_set.csv") -> dict:
+def load_evaluation_data(csv_file_path: str = EVALUATION_FILE_PATH) -> dict:
     """Loads evaluation data from a CSV file and returns questions and ground truths.
 
     Args:
