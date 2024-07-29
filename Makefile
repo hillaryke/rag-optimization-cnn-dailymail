@@ -8,3 +8,6 @@ down:
 
 test:
 	poetry run python -m unittest discover -s tests -p "test_*.py"
+
+add-dev_%:
+	poetry add --group dev $*
