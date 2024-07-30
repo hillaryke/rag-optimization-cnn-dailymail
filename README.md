@@ -243,8 +243,17 @@ results. However, with Langsmith, many things were not clear. The documentation
 on ragas website was empty. I therefore opted to build my own RAGAS pipeline and
 save the results in csv files.
 
-I followed the steps below to setup the evaluation pipeline:
+### Choice of RAGAS metrics for evaluation
+I prioritized the following metrics for evaluation in that order:
+1. Answer Correctness: How accurate the answer is compared to the ground truth.
+2. Faithfulness: How well the answer aligns with the facts in the given context.
+3. Answer Relevancy: How well the answer addresses the question asked.
+4. Context Precision: How relevant the retrieved information is to the question.
 
+More metrics and their explanations can be found on ragas documentation [here](https://docs.ragas.io/en/stable/concepts/metrics/index.html).
+
+
+### Steps followed to setup the evaluation pipeline
 1. Installed RAGAS using poetry.
 2. I started with the simple setup from the RAGAS documentation
    [here](https://docs.ragas.io/en/latest/getstarted/evaluation.html).
@@ -278,8 +287,10 @@ I followed the steps below to setup the evaluation pipeline:
      needed and the results saved as a CSV file.
 
 ## How to run a benchmark on the RAG system using RAGAS
-Running the evaluation pipeline using ragas is fairly simple. 
-Assuming we have initialized the RAG system in this manner as seen in the section on RAG system setup above:
+
+Running the evaluation pipeline using ragas is fairly simple. Assuming we have
+initialized the RAG system in this manner as seen in the section on RAG system
+setup above:
 
 ```Python
   from src.rag_pipeline.rag_system import RAGSystem
@@ -293,7 +304,8 @@ Assuming we have initialized the RAG system in this manner as seen in the sectio
   rag_system.initialize()
 ```
 
-We can then run the evaluation pipeline as follows, providing the `rag_chain` initialized in the instance of RAGsystem above:
+We can then run the evaluation pipeline as follows, providing the `rag_chain`
+initialized in the instance of RAGsystem above:
 
 ```Python
   from src.ragas.ragas_pipeline import run_ragas_evaluation
@@ -305,12 +317,56 @@ We can then run the evaluation pipeline as follows, providing the `rag_chain` in
   )
 ```
 
-The function will run the evaluation pipeline and save the results in a csv file with the `experiment_name` being used to name the csv results file.
+The function will run the evaluation pipeline and save the results in a csv file
+with the `experiment_name` being used to name the csv results file.
 
 ## The results of the baseline benchmark evaluation
 
+The baseline benchmark evaluation was run using the RAG system with the following configurations:
+- Model: GPT-4o
+- Embeddings: OpenAIEmbeddings (text-embeddings-ada-002)
+- Vectorstore: pgvector
+- Chunking strategy: RecursiveCharacterTestSplitter, chunk_size=1000, overlap=200
+- Ragchain - RetrievalQA with the default prompt
+
+### Summary statistics
+Since the metrics were all of type float64, I could carry out numerical calculations. i calculated the summary statistics i.e mean, standard deviation and creating visualizations to understand the performance of the RAG system.
+
+Below is a boxplot of the summary statistics:
+
+![baseline-benchmark-results](screenshots/results/baseline_benchmark_visualization.png)
+
+Key observations from the summary statistics and boxplots:
+
+- **Answer Correctness**: The average answer correctness is `0.689`, suggesting that the system generates reasonably accurate answers most of the time. However, there's a wide range `(0.23 to 1)`, indicating that the accuracy can vary significantly depending on the question. The standard deviation of 0.189 also supports this observation.
+
+- **Faithfulness**: The system excels in faithfulness, with a high average score of `0.863` and `75%` of the values at the maximum of 1. This indicates that the generated answers are generally consistent with the provided context.
+
+- **Answer Relevancy**: The average answer relevancy is 0.847, suggesting that the answers are mostly relevant to the questions. However, there are a few instances where the relevancy is 0, indicating that the system might sometimes generate irrelevant responses. The standard deviation of 0.292 also indicates a relatively wide range of relevancy scores.
+
+- **Context Precision**: The system performs exceptionally well in context precision, with an average score of 0.98 and most values concentrated near 1. This suggests that the system is highly effective at retrieving relevant context for answering questions.
 
 
+
+## Optimization techniques
+
+### Using open source model for CrossEncoderReranking.
+
+The embeddings I used were from the `sentence-transformers` library. I used
+embeddings the model `sentence-transformers/msmarco-distilbert-dot-v5`
+
+The drawbacks:
+
+- The reranker was quite slow on average it used 22 seconds in retrieval as seen
+  in the
+  Langsmith![cross-encoder-reranking-opensource-model-langsmith-traces](screenshots/langsmith-tracing-opensource-rerankerScreenshot%20from%202024-07-30%2006-34-14.png)
+- During the evaluation with ragas, the entire process took 15 minutes.
+
+- My assumptions were that since the model is from huggingface and is running locally, therefore the it would use cpu to carry out the operations making it slow. I believe this can be improved by hosting the and using gpu.
+- Another reason to support this is that I used, bge-raranker-base which is 1.1GB in size.
+When I throttled the CPU this got slower, upto 110 seconds.
+
+### 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file

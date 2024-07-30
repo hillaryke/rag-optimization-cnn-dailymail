@@ -139,8 +139,8 @@ class RAGSystem:
         self.final_retriever = my_reranker.initialize()
 
     def setup_llm(self):
-        if model_name:
-            llm = ChatOpenAI(model_name=model_name, temperature=0)
+        if self.model_name:
+            llm = ChatOpenAI(model_name=self.model_name, temperature=0)
             self.llm = llm
         
         return self.llm
