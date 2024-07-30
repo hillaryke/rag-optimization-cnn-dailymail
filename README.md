@@ -277,7 +277,39 @@ I followed the steps below to setup the evaluation pipeline:
      into a pandas DataFrame. If saving locally, a directory is created if
      needed and the results saved as a CSV file.
 
-## Run and analyze baseline benchmark evaluation
+## How to run a benchmark on the RAG system using RAGAS
+Running the evaluation pipeline using ragas is fairly simple. 
+Assuming we have initialized the RAG system in this manner as seen in the section on RAG system setup above:
+
+```Python
+  from src.rag_pipeline.rag_system import RAGSystem
+
+  rag_system = RAGSystem(
+    model_name = "gpt-4o",
+    embeddings = embeddings,
+    # Here we can add more parameters to customize the RAG system
+  )
+
+  rag_system.initialize()
+```
+
+We can then run the evaluation pipeline as follows, providing the `rag_chain` initialized in the instance of RAGsystem above:
+
+```Python
+  from src.ragas.ragas_pipeline import run_ragas_evaluation
+
+  rag_results = run_ragas_evaluation(
+    rag_chain=rag_system.rag_chain,
+    save_results=True,
+    experiment_name="embedding_model_bge_large"
+  )
+```
+
+The function will run the evaluation pipeline and save the results in a csv file with the `experiment_name` being used to name the csv results file.
+
+## The results of the baseline benchmark evaluation
+
+
 
 ## License
 
