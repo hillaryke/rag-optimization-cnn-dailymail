@@ -38,7 +38,7 @@ class RAGSystem:
                 use_ensemble_retriever: bool = False,
                 use_multiquery: bool = False,
                 chunk_size: int = CHUNK_SIZE,
-                chunk_overlap: int = CHUNK_OVERLAP
+                chunk_overlap: int = CHUNK_OVERLAP,
     ):
         self.model_name = model_name
         self.llm = None
@@ -65,8 +65,10 @@ class RAGSystem:
         documents = load_docs_from_csv(as_document=True)
         self.documents = documents
         
-    def prepare_documents(self):
+    def prepare_documents(self, len_split_docs: int = 0):
         split_docs = chunk_by_recursive_split(self.documents, chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap)
+        if len_split_docs:
+            split_docs = split_docs[:len_split_docs]
         return split_docs
     
     def initialize_vectorstore(self):
@@ -131,14 +133,14 @@ class RAGSystem:
         result = self.rag_chain.invoke(question)
         return result["answer"]
 
-    def initialize(self):
+    def initialize(self, len_split_docs: int = 0):
         self.load_documents()
         self.setup_vectorstore()
         self.setup_base_retriever()
         
         if not self.existing_vectorstore:
             # Setup a new vectorstore
-            self.split_docs = self.prepare_documents()
+            self.split_docs = self.prepare_documents(len_split_docs)
             
             self.vectorstore.add_documents(self.split_docs)
 
