@@ -17,6 +17,7 @@ load_dotenv()
 from src.rag_pipeline.rag_utils import rag_chain_setup
 from src.rag_pipeline.chunking_strategies import chunk_by_recursive_split
 from src.rag_pipeline.load_docs import load_docs_from_csv
+from src.rag_pipeline.reranker import Reranker
 
 from misc import Settings
 
@@ -30,6 +31,7 @@ CHUNK_OVERLAP = Settings.CHUNK_OVERLAP
 class RAGSystem:
     def __init__(self, 
                 model_name: str,
+                llm: Any = None,
                 embeddings: Any = None,
                 collection_name: str = COLLECTION_NAME,
                 source_file_path: str = SOURCE_FILE_PATH,
@@ -39,9 +41,13 @@ class RAGSystem:
                 use_multiquery: bool = False,
                 chunk_size: int = CHUNK_SIZE,
                 chunk_overlap: int = CHUNK_OVERLAP,
+                k_documents: int = 5,
+                use_reranker: bool = False,
+                use_cohere_reranker: bool = False,
+                top_n_ranked: int = 5
     ):
         self.model_name = model_name
-        self.llm = None
+        self.llm = llm
         self.llm_queries_generator = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
         self.source_file_path = source_file_path
         self.documents = []
@@ -57,9 +63,12 @@ class RAGSystem:
         self.ensemble_retriever = None
         self.use_ensemble_retriever = use_ensemble_retriever
         self.use_multiquery = use_multiquery
+        self.use_reranker = use_reranker
+        self.use_cohere_reranker = use_cohere_reranker
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
-        self.k_documents = 5
+        self.k_documents = k_documents
+        self.top_n_ranked = top_n_ranked
 
     def load_documents(self, file_path: str = None):
         documents = load_docs_from_csv(as_document=True)
@@ -120,14 +129,27 @@ class RAGSystem:
                                     llm=self.llm_queries_generator,
                             )
 
+    def setup_reranker(self):
+        print("--SETUP RERANKER--")
+        my_reranker = Reranker(
+                            retriever=self.final_retriever, 
+                            top_n=self.top_n_ranked,
+                            use_cohere_reranker=self.use_cohere_reranker
+                        )
+        self.final_retriever = my_reranker.initialize()
+
     def setup_llm(self):
-        llm = ChatOpenAI(model_name=self.model_name, temperature=0)
-        self.llm = llm
-        return llm
+        if model_name:
+            llm = ChatOpenAI(model_name=model_name, temperature=0)
+            self.llm = llm
+        
+        return self.llm
 
     def setup_rag_chain(self):
+        print("--SETUP RAG CHAIN--")
         llm = self.setup_llm()
         self.rag_chain = rag_chain_setup(self.final_retriever, llm)
+        print("--RAGCHAIN SETUP COMPLETE!--")
 
     def query(self, question: str) -> str:
         result = self.rag_chain.invoke(question)
@@ -139,18 +161,25 @@ class RAGSystem:
         self.setup_base_retriever()
         
         if not self.existing_vectorstore:
+            print("--SETUP NEW VECTORSTORE--")
             # Setup a new vectorstore
             self.split_docs = self.prepare_documents(len_split_docs)
             
             self.vectorstore.add_documents(self.split_docs)
 
             if self.use_ensemble_retriever:
+                print("--USING ENSEMBLE RETRIEVER--")
                 self.setup_bm25_retriever(self.split_docs)
                 self.setup_ensemble_retriever()
             elif self.use_multiquery:
+                print("--USING MULTIQUERY RETRIEVER--")
                 self.setup_multiquery_retriever(self.base_retriever)
             else:
+                print("--USING BASE RETRIEVER--")
                 self.setup_base_retriever()
             
+        if self.use_reranker:
+            self.setup_reranker()
+        
         self.setup_rag_chain()
 
