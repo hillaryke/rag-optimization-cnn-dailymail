@@ -347,8 +347,108 @@ Key observations from the summary statistics and boxplots:
 - **Context Precision**: The system performs exceptionally well in context precision, with an average score of 0.98 and most values concentrated near 1. This suggests that the system is highly effective at retrieving relevant context for answering questions.
 
 
+### Further analysis
+I noted the following observations when manually going through each question at the results:
+
+
+
+## Identifying areas of improvement
 
 ## Optimization techniques
+
+To work on the identified areas of improvement, I planned on implementing different optimization techniques. The techniques I planned to implement include:
+
+* **Prompt Engineering**: Experiment with different prompt formats to guide the model towards generating more factually accurate and relevant answers. This could improve answer_correctness, faithfulness, and answer_relevancy.
+* **Use of Hybrid Retrievals**: Combining dense (e.g., neural) and sparse (e.g., BM25) retrieval models can leverage the strengths of both approaches, leading to improved document retrieval performance.
+* **Using Multiquery retriever**: By generating multiple queries, this could improve help find documents that might have been missed due to subtle differences in wording or imperfect vector representations.
+* **Experimenting with different embedding models**: Using advanced embeddings such as BERT or other transformer-based models for context representation can improve the quality of the retrieved documents, leading to better answer generation.
+* **Reranking mechanism**: After initial retrieval, re-rank the retrieved documents based on additional factors like relevance scores. This could help prioritize the most relevant documents, improving answer_correctness and answer_relevancy.
+* **Improved Chunking Strategy**: Optimizing chunk size and overlap parameters can help in capturing more coherent and contextually relevant document sections, thereby improving the quality of the retrieved context.
+
+
+## Implementation of optimization techniques
+### Prompt Engineering
+
+Below is a boxplot comparison of statistical analysis against the baseline benchmarks:
+
+![baseline-benchmark-results](screenshots/results/baseline_benchmark_visualization.png)
+
+
+### Hybrid Retrievals
+I implemented a hybrid retrieval mechanism that combines dense and sparse retrieval models to improve document retrieval performance. 
+
+The hybrid retrieval mechanism uses a combination of BM25 and the base retriever from the RAG system to retrieve documents. The BM25 retriever is used to retrieve the top `k` documents based on the BM25 score, and the base retriever is used to retrieve additional documents. The documents retrieved by both retrievers are then combined and ranked based on relevance scores.
+
+The ranking is done by Reciprocal Rank Fusion (RRF), which combines the relevance scores from both retrievers to rank the documents. The RRF score is calculated as the reciprocal of the sum of the ranks of the documents retrieved by both retrievers.
+
+Below is a boxplot comparison of statistical analysis against the baseline benchmarks:
+
+![baseline-benchmark-results](screenshots/results/baseline_benchmark_visualization.png)
+
+### Use of Multiquery retriever
+- I implemented a multiquery retriever that generates multiple queries to retrieve documents. 
+- The multiquery retriever generates `n` queries using llm(gpt-3.5-turbo) based on the question.
+- It then retrieves documents for each query using the base retriever from the RAG system.
+- The documents retrieved by each query are then combined and ranked.
+
+Below is a boxplot comparison of statistical analysis against the baseline benchmarks:
+
+![baseline-benchmark-results](screenshots/results/baseline_benchmark_visualization.png)
+
+### Chunking Strategy
+- I experimented with a different chunking strategy which could improve the quality of the retrieved context, enhancing the context_precision and hence the answer generation.
+- With `RecursiveCharacterTestSplitter`, I used a chunk size of 500 and overlap of 100.
+
+These were the results of the chunking strategy:
+
+![chunking-strategy-analysis](screenshots/results/chunk_500_overlap_100_visualization.png)
+
+* **Answer Correctness**: This increased significantly from `0.689` in the baseline to `0.711` in the chunked configuration. 
+  - This suggests that smaller chunks might be more effective in guiding the model to generate factually accurate answers. 
+  - The standard deviation also decreased (as seen from the image with smaller wicks), indicating more consistent accuracy in the chunked results.
+
+* **Faithfulness**: The average faithfulness also increased notably from 0.863 to 0.905. 
+  - This implies that the chunked configuration, with smaller context windows, might help the model generate answers that are more aligned with the factual information in the context. 
+  - The standard deviation also decreased, indicating more consistent faithfulness in the chunked results.
+
+* **Answer Relevancy**: The average answer relevancy improved from 0.847 to 0.938.
+  - This suggests that smaller chunks are more effective in guiding the model to generate answers that are relevant to the questions. 
+  - The standard deviation also decreased significantly, indicating much more consistent relevancy in the chunked results.
+
+* **Context Precision**: The average context precision slightly decreased from 0.980 to 0.955. 
+  - This suggests that smaller chunks might lead to slightly less precise context retrieval compared to larger chunks. However, the chunked configuration still maintains a high average context precision.
+
+Overall, reducing the chunk size and overlap seems to have a positive impact on all metrics except for context precision, which experienced a minor decrease. This suggests that smaller chunks might be a more effective strategy for this particular RAG system and dataset.
+
+**Recommendations**: Explore different combinations of chunk size and overlap to find the optimal configuration for this specific RAG system and dataset.
+
+### Experimenting with different embedding models
+- I experimented with different embedding models to improve the quality of the retrieval, hence improve answer generation.
+- I used embedding models from huggingface library and OpenAI text embedding models.
+- For OpenAI `text-embeddings-ada-002` is the default model and hence results of this are the baseline results. I tried `text-embedding-3-large` as well.
+- For huggingface models, I tried out the following:
+    - `BAAI/bge-small-en-v1.5`	384 dim	  - Fast and Default English model,	(0.067GB in size)
+    - `BAAI/bge-large-en-v1.5`	1024 dim	- Large English model, v1.5	1.200 (1.2GB in size)
+
+These are the comparison of the results of the different embedding models:
+
+![embedding-models-analysis](screenshots/results/embedding_models_evaluation.png)
+
+From the analysis we can deduce the following:
+* **Baseline_ada2_openai**: This model serves as our baseline, achieving the highest scores in answer correctness and faithfulness. It indicates a strong capability to generate factually accurate and contextually consistent answers. 
+
+* **all-mpnet-v2**:  This model demonstrates a well-rounded performance, exhibiting competitive scores across all metrics. It particularly excels in answer relevancy, suggesting its ability to understand user intent and generate pertinent responses. This model is often pre-trained on a massive amount of web text, which might contribute to its strong semantic understanding.
+
+* **bge-large and bge-small**: These models seem to be less effective compared to the others. The "large" version performs slightly better than the "small" one, which is expected due to its larger size and capacity. However, both struggle with answer correctness and faithfulness, indicating potential difficulties in capturing factual information and maintaining consistency with the context. This could be due to limitations in their pre-training data or architecture.
+
+### Future improvements
+If I had more time, I would consider the following additional optimization techniques:
+
+- **Fine-tuning the Language or embedding Models**: Fine-tune the models on a dataset specifically designed for the domain we had, (in this case the CNN/Daily Mail dataset). This could improve answer_correctness and faithfulness by tailoring the model's knowledge and response style.
+- **Adaptive Chunking**: Using adaptive chunking strategies that vary chunk size based on document type and content length can improve context relevance and coherence.
+* **Agentic chunking**: 
+
+
 
 ### Using open source model for CrossEncoderReranking.
 
