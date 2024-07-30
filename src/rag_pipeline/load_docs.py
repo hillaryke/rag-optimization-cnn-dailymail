@@ -1,9 +1,14 @@
+import pandas as pd
+
 from typing import List
 from langchain.docstore.document import Document
 from datasets import load_dataset
-import pandas as pd
 
-def load_and_process_dataset(page_content_column: str = "article", split: str = "validation[:1000]", as_document: bool = False) -> List[Document]:
+from misc import Settings
+
+PAGE_CONTENT_COLUMN = Settings.PAGE_CONTENT_COLUMN
+
+def load_and_process_dataset(page_content_column: str = PAGE_CONTENT_COLUMN, split: str = "validation[:1000]", as_document: bool = False) -> List[Document]:
     """Loads the CNN/Daily Mail dataset, creates LangChain Documents, and returns them.
 
     Args:

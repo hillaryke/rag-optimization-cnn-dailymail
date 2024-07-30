@@ -39,7 +39,7 @@ The objective of this project is to:
 1. Clone the repository
 
 ```bash
-git clone git@github.com:hillaryke/contract-qa-high-precision-rag.git
+git clone git@github.com:hillaryke/rag-optimization-cnn-dailymail.git
 ```
 
 2. Add OpenAI API key to `.env` file
