@@ -23,7 +23,7 @@ The objective of this project is to:
 1. Clone the repository
 
 ```bash
-git clone git@github.com:hillaryke/contract-qa-high-precision-rag.git
+git clone git@github.com:hillaryke/rag-optimization-cnn-dailymail.git
 ```
 
 2. Add OpenAI API key to `.env` file
@@ -44,7 +44,7 @@ poetry install
 
 ## Approach
 
-I followed the following stesp to develop the RAG system and later perform
+I followed the following steps to develop the RAG system and later perform
 optimization.
 
 1. Project setup
@@ -55,6 +55,8 @@ optimization.
 6. Identify areas of improvement.
 7. Identify optimization techniques.
 8. Implement optimization techniques.
+9. Analyze the results of the optimization techniques.
+10. Document the results and provide recommendations.
 
 ### Project setup
 
@@ -244,16 +246,19 @@ on ragas website was empty. I therefore opted to build my own RAGAS pipeline and
 save the results in csv files.
 
 ### Choice of RAGAS metrics for evaluation
+
 I prioritized the following metrics for evaluation in that order:
+
 1. Answer Correctness: How accurate the answer is compared to the ground truth.
 2. Faithfulness: How well the answer aligns with the facts in the given context.
 3. Answer Relevancy: How well the answer addresses the question asked.
 4. Context Precision: How relevant the retrieved information is to the question.
 
-More metrics and their explanations can be found on ragas documentation [here](https://docs.ragas.io/en/stable/concepts/metrics/index.html).
-
+More metrics and their explanations can be found on ragas documentation
+[here](https://docs.ragas.io/en/stable/concepts/metrics/index.html).
 
 ### Steps followed to setup the evaluation pipeline
+
 1. Installed RAGAS using poetry.
 2. I started with the simple setup from the RAGAS documentation
    [here](https://docs.ragas.io/en/latest/getstarted/evaluation.html).
@@ -322,15 +327,21 @@ with the `experiment_name` being used to name the csv results file.
 
 ## The results of the baseline benchmark evaluation
 
-The baseline benchmark evaluation was run using the RAG system with the following configurations:
+The baseline benchmark evaluation was run using the RAG system with the
+following configurations:
+
 - Model: GPT-4o
 - Embeddings: OpenAIEmbeddings (text-embeddings-ada-002)
 - Vectorstore: pgvector
-- Chunking strategy: RecursiveCharacterTestSplitter, chunk_size=1000, overlap=200
+- Chunking strategy: RecursiveCharacterTestSplitter, chunk_size=1000,
+  overlap=200
 - Ragchain - RetrievalQA with the default prompt
 
 ### Summary statistics
-Since the metrics were all of type float64, I could carry out numerical calculations. i calculated the summary statistics i.e mean, standard deviation and creating visualizations to understand the performance of the RAG system.
+
+Since the metrics were all of type float64, I could carry out numerical
+calculations. i calculated the summary statistics i.e mean, standard deviation
+and creating visualizations to understand the performance of the RAG system.
 
 Below is a boxplot of the summary statistics:
 
@@ -338,135 +349,354 @@ Below is a boxplot of the summary statistics:
 
 Key observations from the summary statistics and boxplots:
 
-- **Answer Correctness**: The average answer correctness is `0.689`, suggesting that the system generates reasonably accurate answers most of the time. However, there's a wide range `(0.23 to 1)`, indicating that the accuracy can vary significantly depending on the question. The standard deviation of 0.189 also supports this observation.
+- **Answer Correctness**: The average answer correctness is `0.689`, suggesting
+  that the system generates reasonably accurate answers most of the time.
+  However, there's a wide range `(0.23 to 1)`, indicating that the accuracy can
+  vary significantly depending on the question. The standard deviation of 0.189
+  also supports this observation.
 
-- **Faithfulness**: The system excels in faithfulness, with a high average score of `0.863` and `75%` of the values at the maximum of 1. This indicates that the generated answers are generally consistent with the provided context.
+- **Faithfulness**: The system excels in faithfulness, with a high average score
+  of `0.863` and `75%` of the values at the maximum of 1. This indicates that
+  the generated answers are generally consistent with the provided context.
 
-- **Answer Relevancy**: The average answer relevancy is 0.847, suggesting that the answers are mostly relevant to the questions. However, there are a few instances where the relevancy is 0, indicating that the system might sometimes generate irrelevant responses. The standard deviation of 0.292 also indicates a relatively wide range of relevancy scores.
+- **Answer Relevancy**: The average answer relevancy is 0.847, suggesting that
+  the answers are mostly relevant to the questions. However, there are a few
+  instances where the relevancy is 0, indicating that the system might sometimes
+  generate irrelevant responses. The standard deviation of 0.292 also indicates
+  a relatively wide range of relevancy scores.
 
-- **Context Precision**: The system performs exceptionally well in context precision, with an average score of 0.98 and most values concentrated near 1. This suggests that the system is highly effective at retrieving relevant context for answering questions.
-
+- **Context Precision**: The system performs exceptionally well in context
+  precision, with an average score of 0.98 and most values concentrated near 1.
+  This suggests that the system is highly effective at retrieving relevant
+  context for answering questions.
 
 ### Further analysis
-I noted the following observations when manually going through each question at the results:
 
-
+I noted the following observations when manually going through each question at
+the results:
 
 ## Identifying areas of improvement
 
 ## Optimization techniques
 
-To work on the identified areas of improvement, I planned on implementing different optimization techniques. The techniques I planned to implement include:
+To work on the identified areas of improvement, I planned on implementing
+different optimization techniques. The techniques I planned to implement
+include:
 
-* **Prompt Engineering**: Experiment with different prompt formats to guide the model towards generating more factually accurate and relevant answers. This could improve answer_correctness, faithfulness, and answer_relevancy.
-* **Use of Hybrid Retrievals**: Combining dense (e.g., neural) and sparse (e.g., BM25) retrieval models can leverage the strengths of both approaches, leading to improved document retrieval performance.
-* **Using Multiquery retriever**: By generating multiple queries, this could improve help find documents that might have been missed due to subtle differences in wording or imperfect vector representations.
-* **Experimenting with different embedding models**: Using advanced embeddings such as BERT or other transformer-based models for context representation can improve the quality of the retrieved documents, leading to better answer generation.
-* **Reranking mechanism**: After initial retrieval, re-rank the retrieved documents based on additional factors like relevance scores. This could help prioritize the most relevant documents, improving answer_correctness and answer_relevancy.
-* **Improved Chunking Strategy**: Optimizing chunk size and overlap parameters can help in capturing more coherent and contextually relevant document sections, thereby improving the quality of the retrieved context.
-
+- **Prompt Engineering**: Experiment with different prompt formats to guide the
+  model towards generating more factually accurate and relevant answers. This
+  could improve answer_correctness, faithfulness, and answer_relevancy.
+- **Use of Hybrid Retrievals**: Combining dense (e.g., neural) and sparse (e.g.,
+  BM25) retrieval models can leverage the strengths of both approaches, leading
+  to improved document retrieval performance.
+- **Using Multiquery retriever**: By generating multiple queries, this could
+  improve help find documents that might have been missed due to subtle
+  differences in wording or imperfect vector representations.
+- **Experimenting with different embedding models**: Using advanced embeddings
+  such as BERT or other transformer-based models for context representation can
+  improve the quality of the retrieved documents, leading to better answer
+  generation.
+- **Reranking mechanism**: After initial retrieval, re-rank the retrieved
+  documents based on additional factors like relevance scores. This could help
+  prioritize the most relevant documents, improving answer_correctness and
+  answer_relevancy.
+- **Improved Chunking Strategy**: Optimizing chunk size and overlap parameters
+  can help in capturing more coherent and contextually relevant document
+  sections, thereby improving the quality of the retrieved context.
 
 ## Implementation of optimization techniques
+
 ### Prompt Engineering
 
-Below is a boxplot comparison of statistical analysis against the baseline benchmarks:
+I experimented with a different prompt format to guide the model towards
+generating more factually accurate and relevant answers.
 
-![baseline-benchmark-results](screenshots/results/baseline_benchmark_visualization.png)
+This came after noticing that some answers generated by the RAG system were not
+concise and direct, however they were still correct.
 
+The challenge was that some questions required a long response expecially the
+reasoning types. It would be challenging to get a prompt to guide model to cover
+all possible expected answers.
+
+Below is a boxplot comparison of statistical analysis against the baseline
+benchmarks:
+
+![baseline-benchmark-results](screenshots/results/bm_prompt_engineering_optimization_results.png)
+
+These are the insights I gathered from the analysis against baseline benchmarks:
+
+- **Answer Correctness**: The average answer correctness increased from 0.689 in
+  the baseline to 0.775 after prompt engineering. This suggests that the
+  optimized prompts are more effective in guiding the model to generate
+  factually accurate answers. The standard deviation also decreased, indicating
+  more consistent accuracy in the optimized results.
+
+- **Faithfulness**: The average faithfulness increased from 0.863 to 0.950.
+
+  - This indicates that the optimized prompts are more effective in guiding the
+    model to generate answers that are faithful to the provided context.
+  - The standard deviation also decreased, indicating more consistent
+    faithfulness in the optimized results.
+
+- **Answer Relevancy**: The average answer relevancy improved from 0.847 to
+  0.941.
+
+  - This suggests that the optimized prompts are more effective in guiding the
+    model to generate answers that are relevant to the questions.
+  - The standard deviation also decreased, indicating more consistent relevancy
+    in the optimized results.
+
+- **Context Precision**: The average context precision remained very high and
+  relatively unchanged (0.980 vs. 0.971).
+  - This suggests that prompt engineering did not significantly impact the
+    system's ability to retrieve relevant context.
+
+Overall, prompt engineering seems to have a positive impact on all four metrics,
+with the most significant improvements observed in answer correctness,
+faithfulness, and answer relevancy. This suggests that the optimized prompts are
+more effective in guiding the model to generate accurate, faithful, and relevant
+answers.
 
 ### Hybrid Retrievals
-I implemented a hybrid retrieval mechanism that combines dense and sparse retrieval models to improve document retrieval performance. 
 
-The hybrid retrieval mechanism uses a combination of BM25 and the base retriever from the RAG system to retrieve documents. The BM25 retriever is used to retrieve the top `k` documents based on the BM25 score, and the base retriever is used to retrieve additional documents. The documents retrieved by both retrievers are then combined and ranked based on relevance scores.
+I implemented a hybrid retrieval mechanism that combines dense and sparse
+retrieval models to improve document retrieval performance.
 
-The ranking is done by Reciprocal Rank Fusion (RRF), which combines the relevance scores from both retrievers to rank the documents. The RRF score is calculated as the reciprocal of the sum of the ranks of the documents retrieved by both retrievers.
+The hybrid retrieval mechanism uses a combination of BM25 and the base retriever
+from the RAG system to retrieve documents. The BM25 retriever is used to
+retrieve the top `k` documents based on the BM25 score, and the base retriever
+is used to retrieve additional documents. The documents retrieved by both
+retrievers are then combined and ranked based on relevance scores.
 
-Below is a boxplot comparison of statistical analysis against the baseline benchmarks:
+The ranking is done by Reciprocal Rank Fusion (RRF), which combines the
+relevance scores from both retrievers to rank the documents. The RRF score is
+calculated as the reciprocal of the sum of the ranks of the documents retrieved
+by both retrievers.
 
-![baseline-benchmark-results](screenshots/results/baseline_benchmark_visualization.png)
+Below is a boxplot comparison of statistical analysis against the baseline
+benchmarks:
+
+![baseline-benchmark-results](screenshots/results/ensemble_retriever_with_bm25.png)
+
+* **Answer Correctness**: The average answer correctness slightly decreased from 0.689 in the baseline to 0.655 in the ensemble configuration. This suggests that combining BM25 with the dense retriever did not improve the factual accuracy of the generated answers. The standard deviation also remained similar, indicating comparable variability in the results.
+
+* **Faithfulness**: The average faithfulness decreased from 0.863 to 0.808. This implies that the ensemble method might have introduced more variability in the factual consistency of answers compared to the baseline. The ensemble system also shows a lower potential for achieving perfect faithfulness (1.0) in some cases, as indicated by the lower upper quartile.
+
+* **Answer Relevancy**: The average answer relevancy slightly increased from 0.847 to 0.894, suggesting a minor improvement in the relevancy of answers generated by the ensemble retriever. However, the standard deviation remained similar, indicating comparable variability in the results.
+
+* **Context Precision**: The average context precision decreased from 0.980 to 0.920. This suggests that the ensemble method, while slightly improving answer relevancy, might retrieve less precise context compared to the baseline dense retriever. The standard deviation also increased, indicating more variability in context precision for the ensemble method.
+
+Overall, using an ensemble retriever did not show significant improvements in answer correctness and faithfulness, and it even slightly decreased context precision. While there was a minor improvement in answer relevancy, the trade-off with context precision might not be desirable.
+
+**Recommendation**: Explore different weight combinations for the BM25 and dense
+retriever components to see if they can further improve performance or mitigate
+the slight decrease in faithfulness and context precision.
 
 ### Use of Multiquery retriever
-- I implemented a multiquery retriever that generates multiple queries to retrieve documents. 
-- The multiquery retriever generates `n` queries using llm(gpt-3.5-turbo) based on the question.
-- It then retrieves documents for each query using the base retriever from the RAG system.
+
+- I implemented a multiquery retriever that generates multiple queries to
+  retrieve documents.
+- The multiquery retriever generates `n` queries using llm(gpt-3.5-turbo) based
+  on the question.
+- It then retrieves documents for each query using the base retriever from the
+  RAG system.
 - The documents retrieved by each query are then combined and ranked.
 
-Below is a boxplot comparison of statistical analysis against the baseline benchmarks:
+Below is a boxplot comparison of statistical analysis against the baseline
+benchmarks:
 
-![baseline-benchmark-results](screenshots/results/baseline_benchmark_visualization.png)
+![baseline-benchmark-results](screenshots/results/bm_multiquery_retriever_results.png)
+
+These are the insights I gathered from the analysis:
+
+* **Answer Correctness**: The multi-query retriever slightly outperforms the baseline in terms of average answer correctness (0.723 vs. 0.689). This suggests that using multiple queries can help retrieve more relevant information, leading to slightly more accurate answers. However, the improvement is not very substantial, and both methods exhibit similar variability in answer correctness.
+
+* **Faithfulness**: The multi-query retriever shows a slight decrease in average faithfulness compared to the baseline (0.894 vs. 0.863). This indicates that using multiple queries might introduce some variability in the factual consistency of answers. However, the multi-query system also demonstrates a higher potential for achieving perfect faithfulness (1.0) in some cases, as seen in the boxplot.
+
+* **Answer Relevancy**: The multi-query retriever significantly outperforms the baseline in answer relevancy (0.903 vs. 0.847). This suggests that using multiple queries is effective in retrieving more relevant context, leading to answers that better address the user's questions. The multi-query retriever also demonstrates less variability in answer relevancy compared to the baseline.
+
+* **Context Precision**: The multi-query retriever shows a slight decrease in average context precision compared to the baseline (0.954 vs. 0.980). This indicates that using multiple queries might sometimes retrieve slightly less precise context. However, the multi-query retriever still maintains a high average context precision, and the difference from the baseline is not very substantial.
+
+Overall, the multi-query retriever is a promising optimization, particularly for improving answer relevancy. While it might introduce some variability in faithfulness and slightly decrease context precision, the significant improvement in answer relevancy suggests that it is effective in retrieving more relevant information for answering questions.
 
 ### Chunking Strategy
-- I experimented with a different chunking strategy which could improve the quality of the retrieved context, enhancing the context_precision and hence the answer generation.
-- With `RecursiveCharacterTestSplitter`, I used a chunk size of 500 and overlap of 100.
+
+- I experimented with a different chunking strategy which could improve the
+  quality of the retrieved context, enhancing the context_precision and hence
+  the answer generation.
+- With `RecursiveCharacterTestSplitter`, I used a chunk size of 500 and overlap
+  of 100.
 
 These were the results of the chunking strategy:
 
 ![chunking-strategy-analysis](screenshots/results/chunk_500_overlap_100_visualization.png)
 
-* **Answer Correctness**: This increased significantly from `0.689` in the baseline to `0.711` in the chunked configuration. 
-  - This suggests that smaller chunks might be more effective in guiding the model to generate factually accurate answers. 
-  - The standard deviation also decreased (as seen from the image with smaller wicks), indicating more consistent accuracy in the chunked results.
+- **Answer Correctness**: This increased significantly from `0.689` in the
+  baseline to `0.711` in the chunked configuration.
 
-* **Faithfulness**: The average faithfulness also increased notably from 0.863 to 0.905. 
-  - This implies that the chunked configuration, with smaller context windows, might help the model generate answers that are more aligned with the factual information in the context. 
-  - The standard deviation also decreased, indicating more consistent faithfulness in the chunked results.
+  - This suggests that smaller chunks might be more effective in guiding the
+    model to generate factually accurate answers.
+  - The standard deviation also decreased (as seen from the image with smaller
+    wicks), indicating more consistent accuracy in the chunked results.
 
-* **Answer Relevancy**: The average answer relevancy improved from 0.847 to 0.938.
-  - This suggests that smaller chunks are more effective in guiding the model to generate answers that are relevant to the questions. 
-  - The standard deviation also decreased significantly, indicating much more consistent relevancy in the chunked results.
+- **Faithfulness**: The average faithfulness also increased notably from 0.863
+  to 0.905.
 
-* **Context Precision**: The average context precision slightly decreased from 0.980 to 0.955. 
-  - This suggests that smaller chunks might lead to slightly less precise context retrieval compared to larger chunks. However, the chunked configuration still maintains a high average context precision.
+  - This implies that the chunked configuration, with smaller context windows,
+    might help the model generate answers that are more aligned with the factual
+    information in the context.
+  - The standard deviation also decreased, indicating more consistent
+    faithfulness in the chunked results.
 
-Overall, reducing the chunk size and overlap seems to have a positive impact on all metrics except for context precision, which experienced a minor decrease. This suggests that smaller chunks might be a more effective strategy for this particular RAG system and dataset.
+- **Answer Relevancy**: The average answer relevancy improved from 0.847 to
+  0.938.
 
-**Recommendations**: Explore different combinations of chunk size and overlap to find the optimal configuration for this specific RAG system and dataset.
+  - This suggests that smaller chunks are more effective in guiding the model to
+    generate answers that are relevant to the questions.
+  - The standard deviation also decreased significantly, indicating much more
+    consistent relevancy in the chunked results.
+
+- **Context Precision**: The average context precision slightly decreased from
+  0.980 to 0.955.
+  - This suggests that smaller chunks might lead to slightly less precise
+    context retrieval compared to larger chunks. However, the chunked
+    configuration still maintains a high average context precision.
+
+Overall, reducing the chunk size and overlap seems to have a positive impact on
+all metrics except for context precision, which experienced a minor decrease.
+This suggests that smaller chunks might be a more effective strategy for this
+particular RAG system and dataset.
+
+**Recommendations**: Explore different combinations of chunk size and overlap to
+find the optimal configuration for this specific RAG system and dataset.
 
 ### Experimenting with different embedding models
-- I experimented with different embedding models to improve the quality of the retrieval, hence improve answer generation.
-- I used embedding models from huggingface library and OpenAI text embedding models.
-- For OpenAI `text-embeddings-ada-002` is the default model and hence results of this are the baseline results. I tried `text-embedding-3-large` as well.
+
+- I experimented with different embedding models to improve the quality of the
+  retrieval, hence improve answer generation.
+- I used embedding models from huggingface library and OpenAI text embedding
+  models.
+- For OpenAI `text-embeddings-ada-002` is the default model and hence results of
+  this are the baseline results. I tried `text-embedding-3-large` as well.
 - For huggingface models, I tried out the following:
-    - `BAAI/bge-small-en-v1.5`	384 dim	  - Fast and Default English model,	(0.067GB in size)
-    - `BAAI/bge-large-en-v1.5`	1024 dim	- Large English model, v1.5	1.200 (1.2GB in size)
+  - `BAAI/bge-small-en-v1.5` 384 dim - Fast and Default English model, (0.067GB
+    in size)
+  - `BAAI/bge-large-en-v1.5` 1024 dim - Large English model, v1.5 1.200 (1.2GB
+    in size)
 
 These are the comparison of the results of the different embedding models:
 
 ![embedding-models-analysis](screenshots/results/embedding_models_evaluation.png)
 
 From the analysis we can deduce the following:
-* **Baseline_ada2_openai**: This model serves as our baseline, achieving the highest scores in answer correctness and faithfulness. It indicates a strong capability to generate factually accurate and contextually consistent answers. 
 
-* **all-mpnet-v2**:  This model demonstrates a well-rounded performance, exhibiting competitive scores across all metrics. It particularly excels in answer relevancy, suggesting its ability to understand user intent and generate pertinent responses. This model is often pre-trained on a massive amount of web text, which might contribute to its strong semantic understanding.
+- **Baseline_ada2_openai**: This model serves as our baseline, achieving the
+  highest scores in answer correctness and faithfulness. It indicates a strong
+  capability to generate factually accurate and contextually consistent answers.
 
-* **bge-large and bge-small**: These models seem to be less effective compared to the others. The "large" version performs slightly better than the "small" one, which is expected due to its larger size and capacity. However, both struggle with answer correctness and faithfulness, indicating potential difficulties in capturing factual information and maintaining consistency with the context. This could be due to limitations in their pre-training data or architecture.
+- **all-mpnet-v2**: This model demonstrates a well-rounded performance,
+  exhibiting competitive scores across all metrics. It particularly excels in
+  answer relevancy, suggesting its ability to understand user intent and
+  generate pertinent responses. This model is often pre-trained on a massive
+  amount of web text, which might contribute to its strong semantic
+  understanding.
+
+- **bge-large and bge-small**: These models seem to be less effective compared
+  to the others. The "large" version performs slightly better than the "small"
+  one, which is expected due to its larger size and capacity. However, both
+  struggle with answer correctness and faithfulness, indicating potential
+  difficulties in capturing factual information and maintaining consistency with
+  the context. This could be due to limitations in their pre-training data or
+  architecture.
 
 ### Future improvements
-If I had more time, I would consider the following additional optimization techniques:
 
-- **Fine-tuning the Language or embedding Models**: Fine-tune the models on a dataset specifically designed for the domain we had, (in this case the CNN/Daily Mail dataset). This could improve answer_correctness and faithfulness by tailoring the model's knowledge and response style.
-- **Adaptive Chunking**: Using adaptive chunking strategies that vary chunk size based on document type and content length can improve context relevance and coherence.
-* **Agentic chunking**: 
+If I had more time, I would consider the following additional optimization
+techniques:
 
+- **Fine-tuning the Language or embedding Models**: Fine-tune the models on a
+  dataset specifically designed for the domain we had, (in this case the
+  CNN/Daily Mail dataset). This could improve answer_correctness and
+  faithfulness by tailoring the model's knowledge and response style.
+- **Adaptive Chunking**: Using adaptive chunking strategies that vary chunk size
+  based on document type and content length can improve context relevance and
+  coherence.
 
+* **Agentic chunking**:
 
 ### Using open source model for CrossEncoderReranking.
 
-The embeddings I used were from the `sentence-transformers` library. I used
-embeddings the model `sentence-transformers/msmarco-distilbert-dot-v5`
+* **Goal**: To enhance the accuracy of document retrieval in a RAG system by re-ranking retrieved documents based on their semantic relevance to the query.
+* **Approach**: Implemented a reranker using a cross-encoder model from Hugging Face (e.g., BAAI/bge-reranker-base). The reranker refines the initial retrieval results from a base retriever (like pgvector_retriever).
 
-The drawbacks:
 
+* **Tools**: Leveraged LangChain's `ContextualCompressionRetriever` which is also used by Cohere Reranker.
+    - I used the embeddings model `sentence-transformers/msmarco-distilbert-dot-v5`
+
+
+Cross-encoders are well-suited for re-ranking tasks because they jointly encode both the query and document, capturing nuanced relationships between them that might be missed by simpler embedding-based methods. This can lead to significant improvements in retrieval quality, especially for complex or ambiguous queries.
+
+#### The results of the cross-encoder reranker
+These are the boxplot comparison of statistical analysis against the baseline:
+
+![baseline-benchmark-results](screenshots/results/bm_reranker_opensource_model_msmacro_distilbert_results.png)
+
+These are the insights I gathered from the analysis:
+* **Answer Correctness**: The average answer correctness increased from 0.689 in the baseline to 0.744 after adding the reranker. 
+  - This suggests that the reranker is effective in improving the factual accuracy of the generated answers. 
+  - The standard deviation also decreased, indicating more consistent accuracy in the reranker results.
+
+* **Faithfulness**: The average faithfulness increased significantly from 0.863 to 0.925. 
+  - This implies that the reranker helps the model generate answers that are more faithful to the provided context. 
+  - The standard deviation also decreased, indicating more consistent faithfulness in the reranker results.
+
+* **Answer Relevancy**: The average answer relevancy improved slightly from 0.847 to 0.935.
+  - This suggests that the reranker contributes to generating answers that are more relevant to the questions. 
+  - The standard deviation also decreased, indicating more consistent relevancy in the reranker results.
+
+* **Context Precision**: The average context precision slightly decreased from 0.980 to 0.942. 
+  - This suggests that the reranker, while improving other metrics, might sometimes retrieve slightly less precise context compared to the baseline. However, the reranker configuration still maintains a high average context precision.
+
+Overall, using the open-source reranker model (msmarco-distilbert-base-v4) seems to have a positive impact on all four metrics, with the most significant improvements observed in answer correctness and faithfulness. This suggests that the reranker is effective in improving the quality and relevance of the generated answers while maintaining high context precision.
+
+#### Challenges encoutered with the cross-encoder reranker
 - The reranker was quite slow on average it used 22 seconds in retrieval as seen
   in the
   Langsmith![cross-encoder-reranking-opensource-model-langsmith-traces](screenshots/langsmith-tracing-opensource-rerankerScreenshot%20from%202024-07-30%2006-34-14.png)
 - During the evaluation with ragas, the entire process took 15 minutes.
 
-- My assumptions were that since the model is from huggingface and is running locally, therefore the it would use cpu to carry out the operations making it slow. I believe this can be improved by hosting the and using gpu.
-- Another reason to support this is that I used, bge-raranker-base which is 1.1GB in size.
-When I throttled the CPU this got slower, upto 110 seconds.
+- My assumptions were that since the model is from huggingface and is running
+  locally, therefore the it would use cpu to carry out the operations making it
+  slow. I believe this can be improved by hosting the and using gpu.
+- Another reason to support this is that I used, bge-raranker-base which is
+  1.1GB in size. When I throttled the CPU this got slower, upto 110 seconds.
 
-### 
+
+## The challenges encountered
+1. Installing some dependencies was unsuccessful sometimes. I had to try
+   different versions of the dependencies to get the right one that would work
+   with the system.
+
+2. I had a challenge with the langsmith tracing. The documentation was not clear
+   on how to use it. I had to go through the some examples from the web to understand how to use it.
+
+3. Using Langsmith with RAGAS was a challenge. Given the time constraint, I could not fully understand how it works. Understanding it would have enabled me to customize my input and output on the pipeline.
+    - There wasn't a clear api documentation on using Ragas Langsmith for evaluation.
+
+4. Analyzing the results of the optimization techniques was time consuming when getting started until I got the hang of it by focusing on different statistical analysis.
+
+4. Using models from huggingface was a challenge. The models were large and
+   required a lot of memory to run. This made the system slow and sometimes
+   crashed. It also took time to download the models given the internet speed.
+
+5. Using Cohere model for Reranking resulted in an API limit error (10 requests / minute). Since I was using a free account, I was limited to the number of requests I could make per minute. My plan to solve this is to add a delay between requests to avoid hitting the limit.
+
+5. The cross-encoder reranker was slow. As stated earlier, it took 22 seconds
+   for generation of an answer and 15 minutes for the entire evaluation process.
+   This was a challenge as it would not be feasible to use in a real-time system.
+   - The solution recommended from Langchain docs is to upload the model to SageMaker, however uploading to any other cloud service with GPU would be a good solution.
+
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
