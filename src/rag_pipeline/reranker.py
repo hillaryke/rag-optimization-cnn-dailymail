@@ -5,8 +5,8 @@ from langchain_cohere import CohereRerank
 from langchain_community.llms import Cohere
 
 class Reranker:
-  def __init__(self, retriever, top_n: int = 5, model = None, use_cohere_reranker: bool = False):
-    self.model = model = HuggingFaceCrossEncoder(model_name="BAAI/bge-reranker-base")
+  def __init__(self, retriever, top_n: int = 5, reranker_model = None, use_cohere_reranker: bool = False):
+    self.reranker_model = HuggingFaceCrossEncoder(model_name="BAAI/bge-reranker-base") if reranker_model is None else reranker_model
     self.top_n = top_n
     self.retriever = retriever
     self.use_cohere_reranker = use_cohere_reranker
@@ -15,7 +15,7 @@ class Reranker:
 
   def setup_opensource_model(self):
     print("--USING OPEN SOURCE MODEL FOR RERANKING--")
-    self.compressor = CrossEncoderReranker(model=model, top_n=3)
+    self.compressor = CrossEncoderReranker(model=self.reranker_model, top_n=3)
     return self.compression_retriever
   
   def setup_cohere_model(self):
@@ -25,7 +25,7 @@ class Reranker:
   
   def setup_compression_retriever(self):
     self.compression_retriever = ContextualCompressionRetriever(
-        base_compressor=compressor, base_retriever=retriever
+        base_compressor=self.compressor, base_retriever=self.retriever
     )
     
   def initialize(self):
