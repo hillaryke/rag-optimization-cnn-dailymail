@@ -3,12 +3,12 @@ import altair as alt
 
 metrics = ['answer_correctness', 'faithfulness', 'answer_relevancy', 'context_precision']
 
-
 def compare_rag_metrics(
       file_dict, 
       metrics=metrics, 
       chart_title='RAG System Metrics Comparison', 
-      output_filename='rag_system_metrics_comparison.json'
+      output_filename='rag_system_metrics_comparison.json',
+      chart_width = 150
 ):
     """
     Compares the metrics of multiple RAG systems using boxplots.
@@ -44,10 +44,10 @@ def compare_rag_metrics(
         color='System:N',
         column=alt.Column('Metric:N', sort=list(metrics), header=alt.Header(orient='bottom'))
     ).properties(
-        width=100,
+        width=chart_width,
         title=chart_title
     ).configure_facet(
-        spacing=0  # Reduce spacing between facets
+        spacing=0.5  # Reduce spacing between facets
     ).configure_view(
         stroke=None
     )
