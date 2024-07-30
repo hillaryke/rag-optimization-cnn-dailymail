@@ -675,11 +675,40 @@ techniques:
 
 ### Using open source model for CrossEncoderReranking.
 
-The embeddings I used were from the `sentence-transformers` library. I used
-embeddings the model `sentence-transformers/msmarco-distilbert-dot-v5`
+* **Goal**: To enhance the accuracy of document retrieval in a RAG system by re-ranking retrieved documents based on their semantic relevance to the query.
+* **Approach**: Implemented a reranker using a cross-encoder model from Hugging Face (e.g., BAAI/bge-reranker-base). The reranker refines the initial retrieval results from a base retriever (like pgvector_retriever).
 
-The drawbacks:
 
+* **Tools**: Leveraged LangChain's `ContextualCompressionRetriever` which is also used by Cohere Reranker.
+    - I used the embeddings model `sentence-transformers/msmarco-distilbert-dot-v5`
+
+
+Cross-encoders are well-suited for re-ranking tasks because they jointly encode both the query and document, capturing nuanced relationships between them that might be missed by simpler embedding-based methods. This can lead to significant improvements in retrieval quality, especially for complex or ambiguous queries.
+
+#### The results of the cross-encoder reranker
+These are the boxplot comparison of statistical analysis against the baseline:
+
+![baseline-benchmark-results](screenshots/results/bm_reranker_opensource_model_msmacro_distilbert_results.png)
+
+These are the insights I gathered from the analysis:
+* **Answer Correctness**: The average answer correctness increased from 0.689 in the baseline to 0.744 after adding the reranker. 
+  - This suggests that the reranker is effective in improving the factual accuracy of the generated answers. 
+  - The standard deviation also decreased, indicating more consistent accuracy in the reranker results.
+
+* **Faithfulness**: The average faithfulness increased significantly from 0.863 to 0.925. 
+  - This implies that the reranker helps the model generate answers that are more faithful to the provided context. 
+  - The standard deviation also decreased, indicating more consistent faithfulness in the reranker results.
+
+* **Answer Relevancy**: The average answer relevancy improved slightly from 0.847 to 0.935.
+  - This suggests that the reranker contributes to generating answers that are more relevant to the questions. 
+  - The standard deviation also decreased, indicating more consistent relevancy in the reranker results.
+
+* **Context Precision**: The average context precision slightly decreased from 0.980 to 0.942. 
+  - This suggests that the reranker, while improving other metrics, might sometimes retrieve slightly less precise context compared to the baseline. However, the reranker configuration still maintains a high average context precision.
+
+Overall, using the open-source reranker model (msmarco-distilbert-base-v4) seems to have a positive impact on all four metrics, with the most significant improvements observed in answer correctness and faithfulness. This suggests that the reranker is effective in improving the quality and relevance of the generated answers while maintaining high context precision.
+
+#### Challenges encoutered with the cross-encoder reranker
 - The reranker was quite slow on average it used 22 seconds in retrieval as seen
   in the
   Langsmith![cross-encoder-reranking-opensource-model-langsmith-traces](screenshots/langsmith-tracing-opensource-rerankerScreenshot%20from%202024-07-30%2006-34-14.png)
@@ -691,7 +720,31 @@ The drawbacks:
 - Another reason to support this is that I used, bge-raranker-base which is
   1.1GB in size. When I throttled the CPU this got slower, upto 110 seconds.
 
-###
+
+## The challenges encountered
+1. Installing some dependencies was unsuccessful sometimes. I had to try
+   different versions of the dependencies to get the right one that would work
+   with the system.
+
+2. I had a challenge with the langsmith tracing. The documentation was not clear
+   on how to use it. I had to go through the some examples from the web to understand how to use it.
+
+3. Using Langsmith with RAGAS was a challenge. Given the time constraint, I could not fully understand how it works. Understanding it would have enabled me to customize my input and output on the pipeline.
+    - There wasn't a clear api documentation on using Ragas Langsmith for evaluation.
+
+4. Analyzing the results of the optimization techniques was time consuming when getting started until I got the hang of it by focusing on different statistical analysis.
+
+4. Using models from huggingface was a challenge. The models were large and
+   required a lot of memory to run. This made the system slow and sometimes
+   crashed. It also took time to download the models given the internet speed.
+
+5. Using Cohere model for Reranking resulted in an API limit error (10 requests / minute). Since I was using a free account, I was limited to the number of requests I could make per minute. My plan to solve this is to add a delay between requests to avoid hitting the limit.
+
+5. The cross-encoder reranker was slow. As stated earlier, it took 22 seconds
+   for generation of an answer and 15 minutes for the entire evaluation process.
+   This was a challenge as it would not be feasible to use in a real-time system.
+   - The solution recommended from Langchain docs is to upload the model to SageMaker, however uploading to any other cloud service with GPU would be a good solution.
+
 
 ## License
 
