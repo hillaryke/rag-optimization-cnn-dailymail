@@ -12,6 +12,7 @@ from src.rag_pipeline.chunking_strategies import chunk_by_recursive_split
 from src.rag_pipeline.load_docs import load_docs_from_csv
 from src.rag_pipeline.reranker import Reranker
 from misc import Settings
+from config.settings import Config
 
 load_dotenv()
 
@@ -26,14 +27,14 @@ CHUNK_OVERLAP = Settings.CHUNK_OVERLAP
 class RAGSystem:
     def __init__(
         self,
-        model_name: str = "gpt-4o-mini",
+        generator_model: str = "gpt-4o-mini",
         llm: Any = None,
         embeddings: Any = None,
         collection_name: str = COLLECTION_NAME,
         source_file_path: str = SOURCE_FILE_PATH,
-        existing_vectorstore: str = False,
+        use_existing_vectorstore: str = False,
         clear_store: bool = True,
-        use_ensemble_retriever: bool = False,
+        use_ensemble: bool = False,
         use_multiquery: bool = False,
         chunk_size: int = CHUNK_SIZE,
         chunk_overlap: int = CHUNK_OVERLAP,
@@ -42,9 +43,11 @@ class RAGSystem:
         use_cohere_reranker: bool = False,
         top_n_ranked: int = 5,
     ):
-        self.model_name = model_name
+        self.generator_model = generator_model
         self.llm = llm
-        self.llm_queries_generator = ChatOpenAI(model_name="gpt-4o-mini", temperature=0)
+        self.llm_queries_generator = ChatOpenAI(
+            model_name=generator_model, temperature=0
+        )
         self.source_file_path = source_file_path
         self.documents = []
         self.split_docs = List[Document]
@@ -56,9 +59,9 @@ class RAGSystem:
         self.base_retriever = None
         self.final_retriever = None
         self.bm25_retriever = None
-        self.existing_vectorstore = existing_vectorstore
+        self.use_existing_vectorstore = use_existing_vectorstore
         self.ensemble_retriever = None
-        self.use_ensemble_retriever = use_ensemble_retriever
+        self.use_ensemble = use_ensemble
         self.use_multiquery = use_multiquery
         self.use_reranker = use_reranker
         self.use_cohere_reranker = use_cohere_reranker
@@ -141,8 +144,8 @@ class RAGSystem:
         self.final_retriever = my_reranker.initialize()
 
     def setup_llm(self):
-        if self.model_name:
-            llm = ChatOpenAI(model_name=self.model_name, temperature=0)
+        if self.generator_model:
+            llm = ChatOpenAI(model_name=self.generator_model, temperature=0)
             self.llm = llm
 
         return self.llm
@@ -162,14 +165,14 @@ class RAGSystem:
         self.setup_vectorstore()
         self.setup_base_retriever()
 
-        if not self.existing_vectorstore:
+        if not self.use_existing_vectorstore:
             print("--SETUP NEW VECTORSTORE--")
             # Set up a new vectorstore
             self.split_docs = self.prepare_documents(len_split_docs)
 
             self.vectorstore.add_documents(self.split_docs)
 
-            if self.use_ensemble_retriever:
+            if self.use_ensemble:
                 print("--USING ENSEMBLE RETRIEVER--")
                 self.setup_bm25_retriever(self.split_docs)
                 self.setup_ensemble_retriever()
