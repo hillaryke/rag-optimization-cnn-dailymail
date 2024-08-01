@@ -11,3 +11,6 @@ test:
 
 add-dev_%:
 	poetry add --group dev $*
+
+run:
+	poetry run python -m main
