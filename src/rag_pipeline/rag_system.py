@@ -14,6 +14,8 @@ from src.rag_pipeline.reranker import Reranker
 from misc import Settings
 from config.settings import Config
 
+from pprint import pprint
+
 load_dotenv()
 
 # constants - can be easily moved to a config file
@@ -27,7 +29,7 @@ CHUNK_OVERLAP = Settings.CHUNK_OVERLAP
 class RAGSystem:
     def __init__(
         self,
-        generator_model: str = "gpt-4o-mini",
+        config: Config = None,
         llm: Any = None,
         embeddings: Any = None,
         collection_name: str = COLLECTION_NAME,
@@ -43,10 +45,12 @@ class RAGSystem:
         use_cohere_reranker: bool = False,
         top_n_ranked: int = 5,
     ):
-        self.generator_model = generator_model
+        # pprint(config)
+        self.config = config
+        self.generator_model = config["models"]["generator_model"]
         self.llm = llm
         self.llm_queries_generator = ChatOpenAI(
-            model_name=generator_model, temperature=0
+            model_name=config["models"]["queries_generator_model"], temperature=0
         )
         self.source_file_path = source_file_path
         self.documents = []
@@ -144,9 +148,7 @@ class RAGSystem:
         self.final_retriever = my_reranker.initialize()
 
     def setup_llm(self):
-        if self.generator_model:
-            llm = ChatOpenAI(model_name=self.generator_model, temperature=0)
-            self.llm = llm
+        self.llm = ChatOpenAI(model_name=self.generator_model, temperature=0)
 
         return self.llm
 

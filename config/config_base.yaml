@@ -1,0 +1,17 @@
+vectorstore:
+  clear_store: true
+  use_existing_vectorstore: true
+chunking:
+  chunk_type: recursive_character_splitter
+  chunk_size: 1000
+  chunk_overlap: 200
+retrieval:
+  k_documents: 5
+  use_ensemble: false
+  use_multiquery: false
+  use_reranker: false
+  use_cohere_reranker: false
+  top_n_ranked: 5
+models:
+  generator_model: 'gpt-4o-mini'
+  queries_generator_model: 'gpt-4o-mini'
