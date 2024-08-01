@@ -30,9 +30,7 @@ class RAGSystem:
     def __init__(
         self,
         config: Config = None,
-        llm: Any = None,
         embeddings: Any = None,
-        collection_name: str = COLLECTION_NAME,
         source_file_path: str = SOURCE_FILE_PATH,
         use_existing_vectorstore: str = False,
         clear_store: bool = True,
@@ -47,15 +45,15 @@ class RAGSystem:
     ):
         # pprint(config)
         self.config = config
-        self.generator_model = config["models"]["generator_model"]
-        self.llm = llm
+        self.generator_model = config.models.generator_model
         self.llm_queries_generator = ChatOpenAI(
-            model_name=config["models"]["queries_generator_model"], temperature=0
+            model_name=config.models.queries_generator_model, temperature=0
         )
+        self.llm = None
         self.source_file_path = source_file_path
         self.documents = []
         self.split_docs = List[Document]
-        self.collection_name = collection_name
+        self.collection_name = config.vectorstore.collection_name
         self.embeddings = embeddings if embeddings else OpenAIEmbeddings()
         self.vectorstore = None
         self.rag_chain = None
