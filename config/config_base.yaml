@@ -1,5 +1,6 @@
 vectorstore:
   clear_store: true
+  collection_name: "baseline_rag"
   use_existing_vectorstore: true
 chunking:
   chunk_type: recursive_character_splitter
@@ -14,4 +15,4 @@ retrieval:
   top_n_ranked: 5
 models:
   generator_model: 'gpt-4o-mini'
-  queries_generator_model: 'gpt-4o-mini'
+  # queries_generator_model: 'gpt-4o-mini'
