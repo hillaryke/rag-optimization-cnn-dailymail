@@ -1,7 +1,7 @@
 vectorstore:
   clear_store: true
   collection_name: "baseline_rag"
-  use_existing_vectorstore: true
+  use_existing_vectorstore: false
 chunking:
   chunk_type: recursive_character_splitter
   chunk_size: 1000
