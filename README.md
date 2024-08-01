@@ -67,6 +67,13 @@ echo "OPENAI_API_KEY=<your_openai_api_key>" > .env
 poetry install
 ```
 
+4. Run the project
+
+```bash
+make up
+```
+This will start the pgvector database and you can now test out in the jupyter notebooks.
+
 ## Approach
 
 I followed the following steps to develop the RAG system and later perform
