@@ -1,11 +1,11 @@
 from typing import List, Any
 from dotenv import load_dotenv
-from langchain_core.documents import Document
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.retrievers import EnsembleRetriever
+from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain_community.retrievers import BM25Retriever
 from langchain_postgres import PGVector
-from langchain.retrievers.multi_query import MultiQueryRetriever
+from langchain_core.documents import Document
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 
 from src.rag_pipeline.rag_utils import rag_chain_setup
 from src.rag_pipeline.chunking_strategies import chunk_by_recursive_split
@@ -25,22 +25,22 @@ CHUNK_OVERLAP = Settings.CHUNK_OVERLAP
 
 class RAGSystem:
     def __init__(
-            self,
-            model_name: str = None,
-            llm: Any = None,
-            embeddings: Any = None,
-            collection_name: str = COLLECTION_NAME,
-            source_file_path: str = SOURCE_FILE_PATH,
-            existing_vectorstore: str = False,
-            clear_store: bool = False,
-            use_ensemble_retriever: bool = False,
-            use_multiquery: bool = False,
-            chunk_size: int = CHUNK_SIZE,
-            chunk_overlap: int = CHUNK_OVERLAP,
-            k_documents: int = 5,
-            use_reranker: bool = False,
-            use_cohere_reranker: bool = False,
-            top_n_ranked: int = 5,
+        self,
+        model_name: str = "gpt-4o-mini",
+        llm: Any = None,
+        embeddings: Any = None,
+        collection_name: str = COLLECTION_NAME,
+        source_file_path: str = SOURCE_FILE_PATH,
+        existing_vectorstore: str = False,
+        clear_store: bool = True,
+        use_ensemble_retriever: bool = False,
+        use_multiquery: bool = False,
+        chunk_size: int = CHUNK_SIZE,
+        chunk_overlap: int = CHUNK_OVERLAP,
+        k_documents: int = 5,
+        use_reranker: bool = False,
+        use_cohere_reranker: bool = False,
+        top_n_ranked: int = 5,
     ):
         self.model_name = model_name
         self.llm = llm
