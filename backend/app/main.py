@@ -11,23 +11,18 @@ load_api_keys()
 
 app = FastAPI()
 
+
+class InitializeRequest(BaseModel):
+    strategy_name: str
+    split_docs: Optional[int] = None
+
+
+class QueryRequest(BaseModel):
+    question: str
+
+
 # Global variable to store the initialized RAGSystem
 rag_system_instance: Optional[RAGSystem] = None
-
-
-@app.on_event("startup")
-async def startup_event():
-    try:
-        strategy_name = "base"
-        config = load_config(strategy_name)
-        rag_system_instance = RAGSystem(config=config)
-        rag_system_instance.initialize(5)
-    except ValidationError as e:
-        raise HTTPException(status_code=400, detail=f"Configuration error: {e}") from e
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Initialization failed: {e}"
-        ) from e
 
 
 # Dependency to get the initialized RAGSystem
@@ -52,8 +47,22 @@ def health_check():
         return {"status": "RAG system is not initialized", "detail": str(e)}
 
 
-class QueryRequest(BaseModel):
-    question: str
+@app.post("/initialize")  # New endpoint for initialization
+def initialize_rag_system(init_request: InitializeRequest):
+    global rag_system_instance
+    try:
+        config = load_config(init_request.strategy_name)
+        rag_system_instance = RAGSystem(config=config)
+        rag_system_instance.initialize(init_request.split_docs)
+        return {
+            "message": f"RAG system initialized with strategy '{init_request.strategy_name}' and split_docs={init_request.split_docs}"
+        }
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail=f"Configuration error: {e}") from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Initialization failed: {e}"
+        ) from e
 
 
 @app.post("/query")
