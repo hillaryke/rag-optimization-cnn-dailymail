@@ -17,6 +17,7 @@ from src.ragas.ragas_utils import load_evaluation_data
 from misc import Settings
 
 EVALUATION_DATASET_DESCRIPTION = Settings.EVALUATION_DATASET_DESCRIPTION
+RESULTS_DIR = Settings.RESULTS_DIR
 
 def run_ragas_evaluation(
     rag_chain: Any,
@@ -95,7 +96,7 @@ def run_ragas_evaluation(
         try:
             # Save the results to a CSV file
             # check if the directory exists, if not create it - data/results
-            parent_dir = "data/ragas_results"
+            parent_dir = RESULTS_DIR
             if not os.path.exists(parent_dir):
                 os.makedirs(parent_dir)
                 

@@ -14,8 +14,6 @@ from src.rag_pipeline.reranker import Reranker
 from misc import Settings
 from config.settings import Config
 
-from pprint import pprint
-
 load_dotenv()
 
 # constants - can be easily moved to a config file
@@ -32,16 +30,6 @@ class RAGSystem:
         config: Config = None,
         embeddings: Any = None,
         source_file_path: str = SOURCE_FILE_PATH,
-        use_existing_vectorstore: str = False,
-        clear_store: bool = True,
-        use_ensemble: bool = False,
-        use_multiquery: bool = False,
-        chunk_size: int = CHUNK_SIZE,
-        chunk_overlap: int = CHUNK_OVERLAP,
-        k_documents: int = 5,
-        use_reranker: bool = False,
-        use_cohere_reranker: bool = False,
-        top_n_ranked: int = 5,
     ):
         # pprint(config)
         self.config = config
@@ -57,20 +45,20 @@ class RAGSystem:
         self.embeddings = embeddings if embeddings else OpenAIEmbeddings()
         self.vectorstore = None
         self.rag_chain = None
-        self.clear_store = clear_store
+        self.clear_store = config.vectorstore.clear_store
         self.base_retriever = None
         self.final_retriever = None
         self.bm25_retriever = None
-        self.use_existing_vectorstore = use_existing_vectorstore
+        self.use_existing_vectorstore = config.vectorstore.use_existing_vectorstore
         self.ensemble_retriever = None
-        self.use_ensemble = use_ensemble
-        self.use_multiquery = use_multiquery
-        self.use_reranker = use_reranker
-        self.use_cohere_reranker = use_cohere_reranker
-        self.chunk_size = chunk_size
-        self.chunk_overlap = chunk_overlap
-        self.k_documents = k_documents
-        self.top_n_ranked = top_n_ranked
+        self.use_ensemble = config.retrieval.use_ensemble
+        self.use_multiquery = config.retrieval.use_multiquery
+        self.use_reranker = config.retrieval.use_reranker
+        self.use_cohere_reranker = config.retrieval.use_cohere_reranker
+        self.chunk_size = config.chunking.chunk_size
+        self.chunk_overlap = config.chunking.chunk_overlap
+        self.k_documents = config.retrieval.k_documents
+        self.top_n_ranked = config.retrieval.top_n_ranked
 
     def load_documents(self):
         documents = load_docs_from_csv(as_document=True)
@@ -82,6 +70,7 @@ class RAGSystem:
         )
         if len_split_docs:
             split_docs = split_docs[:len_split_docs]
+        print(f"--documents_no: {len(split_docs)}")
         return split_docs
 
     def initialize_vectorstore(self):

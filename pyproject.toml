@@ -29,6 +29,10 @@ cohere = "^5.6.2"
 langchain-cohere = "^0.1.9"
 langchain-google-genai = "^1.0.8"
 
+# Backend depencies
+fastapi = "^0.111.1"
+uvicorn = "^0.30.4"
+
 [tool.poetry.group.dev.dependencies]
 transformers = "^4.43.3"
 ipykernel = "^6.29.5"

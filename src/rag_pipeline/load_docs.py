@@ -8,7 +8,12 @@ from misc import Settings
 
 PAGE_CONTENT_COLUMN = Settings.PAGE_CONTENT_COLUMN
 
-def load_and_process_dataset(page_content_column: str = PAGE_CONTENT_COLUMN, split: str = "validation[:1000]", as_document: bool = False) -> List[Document]:
+
+def load_and_process_dataset(
+    page_content_column: str = PAGE_CONTENT_COLUMN,
+    split: str = "validation[:1000]",
+    as_document: bool = False,
+) -> List[Document]:
     """Loads the CNN/Daily Mail dataset, creates LangChain Documents, and returns them.
 
     Args:
@@ -23,10 +28,13 @@ def load_and_process_dataset(page_content_column: str = PAGE_CONTENT_COLUMN, spl
 
     # Load the dataset from huggingface
     dataset = load_dataset("cnn_dailymail", "3.0.0", split="validation[:1000]")
-    
+
     if as_document:
         documents = [
-            Document(page_content=article[page_content_column], metadata={"source": "cnn_dailymail"})
+            Document(
+                page_content=article[page_content_column],
+                metadata={"source": "cnn_dailymail"},
+            )
             for article in dataset
         ]
     else:
@@ -34,10 +42,11 @@ def load_and_process_dataset(page_content_column: str = PAGE_CONTENT_COLUMN, spl
 
     return documents
 
+
 def load_docs_from_csv(
-    file_path: str = "data/cnn_dailymail_validation_subset.csv",
-    page_content_column: str = "article", 
-    as_document: bool = False
+    file_path: str = Settings.SOURCE_FILE_PATH,
+    page_content_column: str = "article",
+    as_document: bool = False,
 ) -> List[Document]:
     """Loads documents from a CSV file and returns them as a list of LangChain Document objects.
 
@@ -53,8 +62,10 @@ def load_docs_from_csv(
     if as_document:
         return [
             Document(
-                page_content=row[page_content_column], 
-                metadata={"source": "cnn_dailymail", "id": row["id"]}
-            ) for _, row in df.iterrows()]
+                page_content=row[page_content_column],
+                metadata={"source": "cnn_dailymail", "id": row["id"]},
+            )
+            for _, row in df.iterrows()
+        ]
     else:
         return df[page_content_column].tolist()
