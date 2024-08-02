@@ -886,8 +886,7 @@ for details.
 
 ## Acknowledgements
 
-- I would like to thank RizzBuzz for presenting the challenge. It was a great
-  learning experience.
+- Thanks to RizzBuzz presenting this challenge and for the OpenAI API key.
 
 - [Langchain](https://langchain.com/)
 - [Ragas](https://ragas.io/)
