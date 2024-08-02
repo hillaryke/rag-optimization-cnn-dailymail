@@ -300,6 +300,24 @@ I prioritized the following metrics for evaluation in that order:
 More metrics and their explanations can be found on ragas documentation
 [here](https://docs.ragas.io/en/stable/concepts/metrics/index.html).
 
+**NOTE**: Ragas may be inaccurate in some cases. For example, the answer
+correctness metric in these examples.
+
+The order in the images is this:
+
+question | generated_answer | ground_truth | answer_correctness.
+
+![baseline_example](screenshots/ragas_limitations/baseline_results.png)
+
+This second examples was obtained from the chunking strategy with 500 chunk size
+and 100 overlap:
+
+![chunking_strategy_example](screenshots/ragas_limitations/chunk_size_500_overlap_100.png)
+
+From the examples we can note that some answers did not deserve the score they
+got. This is one of the limitations of the RAGAS evaluation. Hence, it is
+important to manually check the answers and not rely solely on the scores.
+
 ### Steps followed to setup the evaluation pipeline
 
 1. Installed RAGAS using poetry.
