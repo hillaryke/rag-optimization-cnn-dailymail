@@ -8,7 +8,7 @@ class Settings:
     CHUNK_SIZE: Final = 1000
     CHUNK_OVERLAP: Final = 200
     PAGE_CONTENT_COLUMN: Final = "article"
-    
+
     GENERATOR_TEMPLATE: Final = """
       Use the following pieces of context to answer the question at the end.
       If you don't know the answer, just say that you don't know, don't try to make up an answer.
@@ -17,9 +17,9 @@ class Settings:
       Question: {question}
       Helpful Answer:
     """
-    
+
     # GENERATOR_TEMPLATE: Final = """
-    #     Use the following pieces of context to answer the question at the end. 
+    #     Use the following pieces of context to answer the question at the end.
     #     These are the instruction to consider:
     #     - Prioritize accuracy and conciseness in your response.
     #     - Answer directly and avoid repeating information from the question.
@@ -32,14 +32,15 @@ class Settings:
 
     #       Question: Where is the Eiffel Tower located?
     #       Answer: Paris, France
-        
+
     #     REMEMBER TO FOLLOW THE INSTRUCTIONS ABOVE.
-        
+
     #     Context: {context}
     #     Question: {question}
     #     Answer:
     # """
 
+    RESULTS_DIR: Final = "data/ragas_results"
     EVALUATION_FILE_PATH = "data/evaluation_sets/evaluation_set_20d20.csv"
     EVALUAION_DATASET_NAME: Final = "CNN DailyMail Evaluation Dataset"
     EVALUATION_DATASET_DESCRIPTION = """

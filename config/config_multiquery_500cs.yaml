@@ -1,0 +1,18 @@
+vectorstore:
+  clear_store: true
+  collection_name: 'chunk_500_200_ada_002'
+  use_existing_vectorstore: false
+chunking:
+  chunk_type: recursive_character_splitter
+  chunk_size: 500
+  chunk_overlap: 100
+retrieval:
+  k_documents: 5
+  use_ensemble: false
+  use_multiquery: true
+  use_reranker: false
+  use_cohere_reranker: false
+  top_n_ranked: 5
+models:
+  generator_model: 'gpt-4o'
+  queries_generator_model: 'gpt-3.5-turbo'

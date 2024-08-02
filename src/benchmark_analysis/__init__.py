@@ -1,2 +1,3 @@
 from .benchmarks_analysis import BenchmarkAnalysis
 from .compare_benchmarks import compare_rag_metrics
+from .metrics_analysis import update_json_with_metrics
