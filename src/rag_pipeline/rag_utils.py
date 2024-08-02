@@ -1,9 +1,13 @@
-from typing import Dict, List
+from typing import List
 
 from langchain.prompts import PromptTemplate
 from langchain.schema import StrOutputParser
 from langchain.docstore.document import Document
-from langchain.schema.runnable import RunnablePassthrough, RunnableParallel, RunnableLambda
+from langchain.schema.runnable import (
+    RunnablePassthrough,
+    RunnableParallel,
+    RunnableLambda,
+)
 
 from misc import Settings
 
@@ -44,14 +48,12 @@ def rag_chain_setup(retriever, llm) -> RunnableParallel:
     filter_langsmith_dataset = RunnableLambda(
         lambda x: x["question"] if isinstance(x, dict) else x
     )
-    
+
     rag_chain = RunnableParallel(
         {
             "question": filter_langsmith_dataset,
             "answer": filter_langsmith_dataset | context_retriever | generator,
-            "contexts": filter_langsmith_dataset
-            | retriever
-            | ragas_output_parser,
+            "contexts": filter_langsmith_dataset | retriever | ragas_output_parser,
         }
     )
 

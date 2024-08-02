@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List, Any, Optional
 from dotenv import load_dotenv
 from langchain.retrievers import EnsembleRetriever
 from langchain.retrievers.multi_query import MultiQueryRetriever
@@ -16,7 +16,7 @@ from config.settings import Config
 
 load_dotenv()
 
-# constants - can be easily moved to a config file
+# Constants - can be easily moved to a config file
 PG_CONNECTION_STRING = Settings.PG_CONNECTION_STRING
 COLLECTION_NAME = Settings.COLLECTION_NAME
 SOURCE_FILE_PATH = Settings.SOURCE_FILE_PATH
@@ -27,11 +27,18 @@ CHUNK_OVERLAP = Settings.CHUNK_OVERLAP
 class RAGSystem:
     def __init__(
         self,
-        config: Config = None,
-        embeddings: Any = None,
+        config: Config,
+        embeddings: Optional[Any] = None,
         source_file_path: str = SOURCE_FILE_PATH,
     ):
-        # pprint(config)
+        """
+        Initialize the RAGSystem with configuration and optional embeddings.
+
+        Args:
+            config (Config): Configuration object.
+            embeddings (Any, optional): Embeddings object. Defaults to OpenAIEmbeddings.
+            source_file_path (str, optional): Path to the source file. Defaults to SOURCE_FILE_PATH.
+        """
         self.config = config
         self.generator_model = config.models.generator_model
         self.llm_queries_generator = ChatOpenAI(
@@ -40,7 +47,7 @@ class RAGSystem:
         self.llm = None
         self.source_file_path = source_file_path
         self.documents = []
-        self.split_docs = List[Document]
+        self.split_docs = []
         self.collection_name = config.vectorstore.collection_name
         self.embeddings = embeddings if embeddings else OpenAIEmbeddings()
         self.vectorstore = None
@@ -61,118 +68,185 @@ class RAGSystem:
         self.top_n_ranked = config.retrieval.top_n_ranked
 
     def load_documents(self):
-        documents = load_docs_from_csv(as_document=True)
-        self.documents = documents
+        """Load documents from the source file."""
+        try:
+            self.documents = load_docs_from_csv(as_document=True)
+        except Exception as e:
+            print(f"Error loading documents: {e}")
+            raise
 
-    def prepare_documents(self, len_split_docs: int = 0):
-        split_docs = chunk_by_recursive_split(
-            self.documents, chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap
-        )
-        if len_split_docs:
-            split_docs = split_docs[:len_split_docs]
-        print(f"--documents_no: {len(split_docs)}")
-        return split_docs
+    def prepare_documents(self, len_split_docs: int = 0) -> List[Document]:
+        """
+        Prepare documents by chunking them.
+
+        Args:
+            len_split_docs (int, optional): Number of split documents to return for testing purposes. Defaults to 0.
+
+        Returns:
+            List[Document]: List of split documents.
+        """
+        try:
+            split_docs = chunk_by_recursive_split(
+                self.documents,
+                chunk_size=self.chunk_size,
+                chunk_overlap=self.chunk_overlap,
+            )
+            if len_split_docs:
+                split_docs = split_docs[:len_split_docs]
+            print(f"--documents_no: {len(split_docs)}")
+            return split_docs
+        except Exception as e:
+            print(f"Error preparing documents: {e}")
+            raise
 
     def initialize_vectorstore(self):
-        self.vectorstore = PGVector(
-            embeddings=self.embeddings,
-            collection_name=self.collection_name,
-            connection=PG_CONNECTION_STRING,
-            use_jsonb=True,
-        )
-        return self.vectorstore
+        """Initialize the vectorstore."""
+        try:
+            self.vectorstore = PGVector(
+                embeddings=self.embeddings,
+                collection_name=self.collection_name,
+                connection=PG_CONNECTION_STRING,
+                use_jsonb=True,
+            )
+        except Exception as e:
+            print(f"Error initializing vectorstore: {e}")
+            raise
 
     def setup_vectorstore(self):
-        # Initialize the vectorstore - this could be an existing collection
+        """Setup the vectorstore, optionally clearing it first."""
         self.initialize_vectorstore()
 
         if self.clear_store:
-            self.vectorstore.drop_tables()
-            # Reinitialize the vectorstore once the tables have been dropped
-            self.initialize_vectorstore()
+            try:
+                self.vectorstore.drop_tables()
+                self.initialize_vectorstore()
+            except Exception as e:
+                print(f"Error clearing vectorstore: {e}")
+                raise
 
-            # TODO - calculate the embedding cost if using openai embeddings
-            # check instance of embeddings if OpenAIEmbeddings
-            # if isinstance(self.embeddings, OpenAIEmbeddings):
-            # calculate cost here
-
-            # Get the existing vectorstore collection
-
-            # Add documents to the vectorstore
-
-    def setup_bm25_retriever(self, split_docs: List[str]):
-        self.bm25_retriever = BM25Retriever.from_documents(split_docs)
-        self.bm25_retriever.k = self.k_documents
+    def setup_bm25_retriever(self, split_docs: List[Document]):
+        """Setup the BM25 retriever."""
+        try:
+            self.bm25_retriever = BM25Retriever.from_documents(split_docs)
+            self.bm25_retriever.k = self.k_documents
+        except Exception as e:
+            print(f"Error setting up BM25 retriever: {e}")
+            raise
 
     def setup_base_retriever(self):
-        self.base_retriever = self.vectorstore.as_retriever(
-            search_kwargs={"k": self.k_documents}
-        )
-        self.final_retriever = self.base_retriever
+        """Setup the base retriever."""
+        try:
+            self.base_retriever = self.vectorstore.as_retriever(
+                search_kwargs={"k": self.k_documents}
+            )
+            self.final_retriever = self.base_retriever
+        except Exception as e:
+            print(f"Error setting up base retriever: {e}")
+            raise
 
     def setup_ensemble_retriever(self):
-        base_retriever = self.vectorstore.as_retriever(
-            search_kwargs={"k": self.k_documents}
-        )
-        self.ensemble_retriever = EnsembleRetriever(
-            retrievers=[self.bm25_retriever, base_retriever], weights=[0.5, 0.5]
-        )
-        self.final_retriever = self.ensemble_retriever
+        """Setup the ensemble retriever."""
+        try:
+            base_retriever = self.vectorstore.as_retriever(
+                search_kwargs={"k": self.k_documents}
+            )
+            self.ensemble_retriever = EnsembleRetriever(
+                retrievers=[self.bm25_retriever, base_retriever], weights=[0.5, 0.5]
+            )
+            self.final_retriever = self.ensemble_retriever
+        except Exception as e:
+            print(f"Error setting up ensemble retriever: {e}")
+            raise
 
     def setup_multiquery_retriever(self, retriever):
-        self.final_retriever = MultiQueryRetriever.from_llm(
-            retriever=retriever,
-            llm=self.llm_queries_generator,
-        )
+        """Setup the multi-query retriever."""
+        try:
+            self.final_retriever = MultiQueryRetriever.from_llm(
+                retriever=retriever,
+                llm=self.llm_queries_generator,
+            )
+        except Exception as e:
+            print(f"Error setting up multi-query retriever: {e}")
+            raise
 
     def setup_reranker(self):
-        print("--SETUP RERANKER--")
-        my_reranker = Reranker(
-            retriever=self.final_retriever,
-            top_n=self.top_n_ranked,
-            use_cohere_reranker=self.use_cohere_reranker,
-        )
-        self.final_retriever = my_reranker.initialize()
+        """Setup the reranker."""
+        try:
+            print("--SETUP RERANKER--")
+            my_reranker = Reranker(
+                retriever=self.final_retriever,
+                top_n=self.top_n_ranked,
+                use_cohere_reranker=self.use_cohere_reranker,
+            )
+            self.final_retriever = my_reranker.initialize()
+        except Exception as e:
+            print(f"Error setting up reranker: {e}")
+            raise
 
     def setup_llm(self):
-        self.llm = ChatOpenAI(model_name=self.generator_model, temperature=0)
-
-        return self.llm
+        """Setup the language model."""
+        try:
+            self.llm = ChatOpenAI(model_name=self.generator_model, temperature=0)
+            return self.llm
+        except Exception as e:
+            print(f"Error setting up LLM: {e}")
+            raise
 
     def setup_rag_chain(self):
-        print("--SETUP RAG CHAIN--")
-        llm = self.setup_llm()
-        self.rag_chain = rag_chain_setup(self.final_retriever, llm)
-        print("--RAGCHAIN SETUP COMPLETE!--")
+        """Setup the RAG chain."""
+        try:
+            print("--SETUP RAG CHAIN--")
+            llm = self.setup_llm()
+            self.rag_chain = rag_chain_setup(self.final_retriever, llm)
+            print("--RAGCHAIN SETUP COMPLETE!--")
+        except Exception as e:
+            print(f"Error setting up RAG chain: {e}")
+            raise
 
     def query(self, question: str) -> str:
-        result = self.rag_chain.invoke(question)
-        return result["answer"]
+        """
+        Query the RAG system.
+
+        Args:
+            question (str): The question to query.
+
+        Returns:
+            str: The answer from the RAG system.
+        """
+        try:
+            result = self.rag_chain.invoke(question)
+            return result["answer"]
+        except Exception as e:
+            print(f"Error querying RAG system: {e}")
+            raise
 
     def initialize(self, len_split_docs: int = 0):
-        self.load_documents()
-        self.setup_vectorstore()
-        self.setup_base_retriever()
+        """Initialize the RAG system."""
+        try:
+            self.load_documents()
+            self.setup_vectorstore()
+            self.setup_base_retriever()
 
-        if not self.use_existing_vectorstore:
-            print("--SETUP NEW VECTORSTORE--")
-            # Set up a new vectorstore
-            self.split_docs = self.prepare_documents(len_split_docs)
+            if not self.use_existing_vectorstore:
+                print("--SETUP NEW VECTORSTORE--")
+                self.split_docs = self.prepare_documents(len_split_docs)
+                self.vectorstore.add_documents(self.split_docs)
 
-            self.vectorstore.add_documents(self.split_docs)
+                if self.use_ensemble:
+                    print("--USING ENSEMBLE RETRIEVER--")
+                    self.setup_bm25_retriever(self.split_docs)
+                    self.setup_ensemble_retriever()
+                elif self.use_multiquery:
+                    print("--USING MULTIQUERY RETRIEVER--")
+                    self.setup_multiquery_retriever(self.base_retriever)
+                else:
+                    print("--USING BASE RETRIEVER--")
+                    self.setup_base_retriever()
 
-            if self.use_ensemble:
-                print("--USING ENSEMBLE RETRIEVER--")
-                self.setup_bm25_retriever(self.split_docs)
-                self.setup_ensemble_retriever()
-            elif self.use_multiquery:
-                print("--USING MULTIQUERY RETRIEVER--")
-                self.setup_multiquery_retriever(self.base_retriever)
-            else:
-                print("--USING BASE RETRIEVER--")
-                self.setup_base_retriever()
+            if self.use_reranker:
+                self.setup_reranker()
 
-        if self.use_reranker:
-            self.setup_reranker()
-
-        self.setup_rag_chain()
+            self.setup_rag_chain()
+        except Exception as e:
+            print(f"Error initializing RAG system: {e}")
+            raise

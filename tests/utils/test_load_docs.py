@@ -1,12 +1,14 @@
+import os
+
+os.chdir("../../")
+
 import unittest
 import pandas as pd
 from langchain.docstore.document import Document
+from unittest.mock import patch  # patch for mocking
 
-import os
-os.chdir("../../")
 from src.rag_pipeline.load_docs import load_docs_from_csv
 
-from unittest.mock import patch  # patch for mocking
 
 class TestLoadDocsFromCSV(unittest.TestCase):
     def setUp(self):
@@ -21,6 +23,7 @@ class TestLoadDocsFromCSV(unittest.TestCase):
                 ],
             }
         )
+
     # TODO - ADD test for loading documents as list of strings
 
     def test_load_as_documents(self):

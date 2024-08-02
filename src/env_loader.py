@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 
+
 def load_api_keys(key_name: str = None) -> str:
     """
     Load an API keys from environment variables. If key_name is provided, load the API key with that name.
@@ -20,6 +21,8 @@ def load_api_keys(key_name: str = None) -> str:
         api_key = os.getenv(key_name)
 
         if api_key is None:
-            raise ValueError(f"API key '{key_name}' not found in environment variables.")
-        
+            raise ValueError(
+                f"API key '{key_name}' not found in environment variables."
+            )
+
         return api_key

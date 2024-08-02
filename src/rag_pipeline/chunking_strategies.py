@@ -1,8 +1,10 @@
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
-from langchain_openai.embeddings import OpenAIEmbeddings
 
-def chunk_by_recursive_split(documents: list[Document], chunk_size: int = 1000, chunk_overlap: int = 200) -> list[Document]:
+
+def chunk_by_recursive_split(
+    documents: list[Document], chunk_size: int = 1000, chunk_overlap: int = 200
+) -> list[Document]:
     """
     Splits a list documents into chunks of a specified size using a recursive character-based approach. Splits are based purely on
     character count.

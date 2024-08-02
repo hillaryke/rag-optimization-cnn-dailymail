@@ -19,6 +19,7 @@ from misc import Settings
 EVALUATION_DATASET_DESCRIPTION = Settings.EVALUATION_DATASET_DESCRIPTION
 RESULTS_DIR = Settings.RESULTS_DIR
 
+
 def run_ragas_evaluation(
     rag_chain: Any,
     use_langsmith: bool = False,
@@ -39,7 +40,7 @@ def run_ragas_evaluation(
         save_results (bool, optional): If True, saves the evaluation results to a CSV file. Defaults to False.
         dataset_description (str, optional): The description of the dataset to upload to LangSmith. Defaults to EVALUATION_DATASET_DESCRIPTION.
         upload_dataset_to_langsmith (bool, optional): If True, uploads the dataset to LangSmith. Defaults to False.
-        
+
 
     Returns:
         pd.DataFrame: A DataFrame containing the evaluation results.
@@ -50,7 +51,7 @@ def run_ragas_evaluation(
         answer_relevancy,
         context_precision,
     ]
-    
+
     print("--LOADING EVALUATION DATA--")
     # Get the test set
     eval_data = load_evaluation_data()  # Load your evaluation data
@@ -60,20 +61,24 @@ def run_ragas_evaluation(
         print("--USING LANGSMITH FOR EVALUATION--")
         # Input validation for LangSmith usage
         if dataset_name is None or experiment_name is None:
-            raise ValueError("dataset_name and experiment_name are required when using LangSmith.")
-        
+            raise ValueError(
+                "dataset_name and experiment_name are required when using LangSmith."
+            )
+
         if upload_dataset_to_langsmith:
             # Check if dataset_description is provided - input validation
             if dataset_description is None:
-                raise ValueError("dataset_description is required when uploading dataset to LangSmith.")
-            
+                raise ValueError(
+                    "dataset_description is required when uploading dataset to LangSmith."
+                )
+
             try:
                 print("--UPLOADING DATASET TO LANGSMITH--")
                 upload_dataset(testset, dataset_name, dataset_description)
                 print("--DATASET UPLOADED TO LANGSMITH--")
             except Exception as e:
                 print(f"Error uploading dataset: {e}")
-        
+
         print("--EVALUATING ON LANGSMITH--")
         result = langsmith_evaluate(
             dataset_name=dataset_name,
@@ -90,7 +95,7 @@ def run_ragas_evaluation(
 
     print("--EVALUATION COMPLETE--")
     df_results = result.to_pandas()
-    
+
     if save_results and not use_langsmith:
         # TODO - place the save results logic in a separate function
         try:
@@ -99,20 +104,21 @@ def run_ragas_evaluation(
             parent_dir = RESULTS_DIR
             if not os.path.exists(parent_dir):
                 os.makedirs(parent_dir)
-                
-            df_results.to_csv(f"{parent_dir}/bm_{experiment_name}_results.csv", index=False)
-            
+
+            df_results.to_csv(
+                f"{parent_dir}/bm_{experiment_name}_results.csv", index=False
+            )
+
             print("--RESULTS SAVED--")
         except Exception as e:
             print(f"An error occurred while saving results: {e}")
-    
-    
+
     return df_results
 
 
 def get_context_and_answer(
     evaluation_data: List[Dict[str, List[str]]],
-    rag_chain, 
+    rag_chain,
 ) -> List[Dict[str, str]]:
     """Retrieves context and generates answers for each question in the evaluation data.
 
@@ -142,11 +148,11 @@ def get_context_and_answer(
     ):
         response = rag_chain.invoke(question)
         contexts_list = response["contexts"]
-                
+
         results["question"].append(question)
         results["contexts"].append(contexts_list)
         results["answer"].append(response["answer"])
         results["ground_truth"].append(ground_truth)
-        
+
     dataset = Dataset.from_dict(results)
     return dataset
