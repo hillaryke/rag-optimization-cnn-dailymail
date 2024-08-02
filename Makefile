@@ -11,3 +11,9 @@ test:
 
 add-dev_%:
 	poetry add --group dev $*
+
+setup:
+	poetry run python -m main
+
+run-backend:
+	poetry run uvicorn backend.app.main:app --reload
